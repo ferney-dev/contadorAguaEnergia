@@ -7,6 +7,33 @@ import MovilEnergia from "./modalEnergia";
 import { exportarEnergiaPDF } from "@/app/utils/exportadorEnergiaPDF";
 import { CheckCircle, XCircle, BarChart3 } from "lucide-react";
 
+interface AreaEnergia {
+  id: number;
+  nombre: string;
+}
+
+interface InspeccionEnergia {
+  id?: number;
+  fecha: string;
+  responsable: string;
+  area_id: number;
+
+  bombillas_c: number;
+  bombillas_nc: number;
+
+  reflectores_c: number;
+  reflectores_nc: number;
+
+  lamparas_c: number;
+  lamparas_nc: number;
+
+  aires_c: number;
+  aires_nc: number;
+
+  observacion?: string;
+  total?: number;
+}
+
 type RegistroValores = {
   [filaKey: string]: { [campo: number]: { c?: string; nc?: string } };
 };
@@ -17,14 +44,14 @@ type RegistroObservaciones = {
 
 interface Props {
   modoNoche?: boolean;
-  dataBackend: any[];
+ dataBackend: AreaEnergia[];
 }
 
 export default function TablaEnergiaIgual({
   modoNoche,
   dataBackend: dataInicial,
 }: Props) {
-  const [dataBackend, setdataBackend] = useState<any[]>(
+ const [dataBackend,setDataBackend] = useState<AreaEnergia[]>(
     Array.isArray(dataInicial) ? dataInicial : []
   );
 
@@ -59,7 +86,7 @@ export default function TablaEnergiaIgual({
   const [fechaActual, setFechaActual] = useState("");
   const [busqueda, setBusqueda] = useState("");
   const [modoNuevaInspeccion, setModoNuevaInspeccion] = useState(false);
-  const [inspecciones, setInspecciones] = useState<any[]>([]);
+  const [inspecciones, setInspecciones] = useState<InspeccionEnergia[]>([]);
   const [responsable, setResponsable] = useState("");
   const [fechaSesion, setFechaSesion] = useState(
     new Date().toISOString().split("T")[0]
@@ -228,7 +255,7 @@ export default function TablaEnergiaIgual({
           ? inspeccionesData.data
           : [];
 
-        setdataBackend(Array.isArray(areasFinal) ? areasFinal : []);
+       setDataBackend(Array.isArray(areasFinal) ? areasFinal : []);
         setInspecciones(Array.isArray(inspeccionesFinal) ? inspeccionesFinal : []);
       } catch (error) {
         console.error("Error inicializando energía:", error);
@@ -348,6 +375,11 @@ export default function TablaEnergiaIgual({
     return ["Todos", ...Array.from(setAnios).sort((a, b) => Number(b) - Number(a))];
   }, [inspecciones]);
 
+  const normalizarFecha = (fecha: string) => {
+  if (!fecha) return "";
+  return fecha.split("T")[0];
+};
+
   const obtenerSemana = (fecha: string) => {
     const d = new Date(fecha);
     const inicio = new Date(d.getFullYear(), 0, 1);
@@ -418,7 +450,7 @@ export default function TablaEnergiaIgual({
     tipo: "c" | "nc",
     value: string
   ) => {
-    const limpio = value.replace(/\D/g, "");
+    const limpio = value.replace(/\D/g, "").slice(0, 3);
 
     setValores((prev) => ({
       ...prev,
@@ -950,7 +982,7 @@ export default function TablaEnergiaIgual({
                       if (!res.ok) throw new Error("No se pudo crear el área");
 
                       const nuevaArea = await res.json();
-                      setdataBackend((prev) => [...prev, nuevaArea]);
+                     setDataBackend((prev) => [...prev, nuevaArea]);
 
                       Swal.fire({
                         toast: true,
@@ -1226,7 +1258,7 @@ export default function TablaEnergiaIgual({
                                 value={areaEnergia.nombre || ""}
                                 onChange={(e) => {
                                   const nuevo = e.target.value;
-                                  setdataBackend((prev) =>
+                                 setDataBackend((prev) =>
                                     prev.map((item) =>
                                       item.id === areaEnergia.id
                                         ? { ...item, nombre: nuevo }
@@ -1252,7 +1284,7 @@ export default function TablaEnergiaIgual({
                                           throw new Error(errorText);
                                         }
 
-                                        setdataBackend((prev) =>
+                                       setDataBackend((prev) =>
                                           prev.filter((item) => item.id !== areaEnergia.id)
                                         );
 
@@ -1304,7 +1336,7 @@ export default function TablaEnergiaIgual({
                                         throw new Error(errorText);
                                       }
 
-                                      setdataBackend((prev) =>
+                                     setDataBackend((prev) =>
                                         prev.map((item) =>
                                           item.id === areaEnergia.id
                                             ? { ...item, nombre: valor }
@@ -1639,7 +1671,19 @@ export default function TablaEnergiaIgual({
                             modoNoche ? "border-[#353535]" : "border-gray-200"
                           }`}
                         >
-                          {registros.reduce((acc, r) => acc + Number(r.total || 0), 0)}
+                          {registros.reduce(
+  (acc, r) =>
+    acc +
+    Number(r.bombillas_c || 0) +
+    Number(r.reflectores_c || 0) +
+    Number(r.lamparas_c || 0) +
+    Number(r.aires_c || 0) +
+    Number(r.bombillas_nc || 0) +
+    Number(r.reflectores_nc || 0) +
+    Number(r.lamparas_nc || 0) +
+    Number(r.aires_nc || 0),
+  0
+)}
                         </td>
                       </tr>
                     </tbody>
