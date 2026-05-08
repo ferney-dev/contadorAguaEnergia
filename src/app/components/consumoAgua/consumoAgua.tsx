@@ -243,32 +243,31 @@ useEffect(() => {
     const nuevasLecturas: any = {};
 
     // 🔧 MANEJAR MÚLTIPLES REGISTROS POR FECHA
-    aguaDB.forEach((item) => {
-      const fecha = new Date(item.fecha + "T00:00:00");
+   aguaDB.forEach((item) => {
+  const fecha = new Date(item.fecha);
 
-      const anio = fecha.getFullYear();
-      const mes = fecha.getMonth();
-      const dia = fecha.getDate();
+  const anio = fecha.getFullYear();
+  const mes = fecha.getMonth();
+  const dia = fecha.getDate();
 
-      if (!nuevasLecturas[anio]) nuevasLecturas[anio] = {};
-      if (!nuevasLecturas[anio][mes]) nuevasLecturas[anio][mes] = {};
+  if (!nuevasLecturas[anio]) nuevasLecturas[anio] = {};
+  if (!nuevasLecturas[anio][mes]) nuevasLecturas[anio][mes] = {};
 
-      const claveFecha = `${dia}`;
-      
-      // Si ya existe un registro para esta fecha, crear array
-      if (!nuevasLecturas[anio][mes][claveFecha]) {
-        nuevasLecturas[anio][mes][claveFecha] = [];
-      }
+  // 👇 EXISTENTE
+  const existente = nuevasLecturas[anio][mes][dia] || {
+    bodega2: "",
+    bodega4: "",
+    total2: 0,
+    total4: 0,
+  };
 
-      // Agregar el registro al array
-      nuevasLecturas[anio][mes][claveFecha].push({
-        id: item.id,
-        bodega2: String(item.bodega1 || 0),
-        bodega4: String(item.bodega2 || 0),
-        total2: item.total_bodega1 || 0,
-        total4: item.total_bodega2 || 0,
-      });
-    });
+  nuevasLecturas[anio][mes][dia] = {
+    bodega2: String(item.bodega1 || existente.bodega2 || ""),
+    bodega4: String(item.bodega2 || existente.bodega4 || ""),
+    total2: existente.total2 + (item.total_bodega1 || 0),
+    total4: existente.total4 + (item.total_bodega2 || 0),
+  };
+});
 
     setLecturas(nuevasLecturas);
   }, [aguaDB]);
@@ -1470,7 +1469,7 @@ const resumenConsumo = (() => {
                           {/* ===== BODEGA 2 ===== */}
                           <td className={`border p-2 ${modoNoche ? "border-gray-700" : "border-gray-300"}`}>
                            <input
-  value={d.bodega2}
+  value={d.bodega2 ?? ""}
   disabled={esBloqueado}
   data-mes={mes}
   data-dia={dia}
@@ -1516,7 +1515,7 @@ const resumenConsumo = (() => {
                           {/* ===== BODEGA 4 ===== */}
                           <td className={`border p-2 ${modoNoche ? "border-gray-700" : "border-gray-300"}`}>
                            <input
-  value={d.bodega4}
+ value={d.bodega4 ?? ""}
   disabled={esBloqueado}
   data-mes={mes}
   data-dia={dia}
