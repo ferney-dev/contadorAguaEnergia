@@ -242,32 +242,26 @@ useEffect(() => {
 
     const nuevasLecturas: any = {};
 
-    // 🔧 MANEJAR MÚLTIPLES REGISTROS POR FECHA
-   aguaDB.forEach((item) => {
-  const fecha = new Date(item.fecha);
+    // 🔧 MANEJAR MÚLTIPLES REGISTROS POR FECHA (Toma el más reciente en lugar de sumar)
+    aguaDB.forEach((item) => {
+      const fecha = new Date(item.fecha + "T00:00:00"); // Asegurar zona horaria local
 
-  const anio = fecha.getFullYear();
-  const mes = fecha.getMonth();
-  const dia = fecha.getDate();
+      const anio = fecha.getFullYear();
+      const mes = fecha.getMonth();
+      const dia = fecha.getDate();
 
-  if (!nuevasLecturas[anio]) nuevasLecturas[anio] = {};
-  if (!nuevasLecturas[anio][mes]) nuevasLecturas[anio][mes] = {};
+      if (!nuevasLecturas[anio]) nuevasLecturas[anio] = {};
+      if (!nuevasLecturas[anio][mes]) nuevasLecturas[anio][mes] = {};
 
-  // 👇 EXISTENTE
-  const existente = nuevasLecturas[anio][mes][dia] || {
-    bodega2: "",
-    bodega4: "",
-    total2: 0,
-    total4: 0,
-  };
+      // Siempre sobreescribimos con el registro más nuevo de la lista (que viene ordenada por fecha ASC, pero el último del mismo día es el más reciente)
+      nuevasLecturas[anio][mes][dia] = {
+        bodega2: String(item.bodega1 || ""),
+        bodega4: String(item.bodega2 || ""),
+        total2: item.total_bodega1 || 0,
+        total4: item.total_bodega2 || 0,
+      };
+    });
 
-  nuevasLecturas[anio][mes][dia] = {
-    bodega2: String(item.bodega1 || existente.bodega2 || ""),
-    bodega4: String(item.bodega2 || existente.bodega4 || ""),
-    total2: existente.total2 + (item.total_bodega1 || 0),
-    total4: existente.total4 + (item.total_bodega2 || 0),
-  };
-});
 
     setLecturas(nuevasLecturas);
   }, [aguaDB]);
