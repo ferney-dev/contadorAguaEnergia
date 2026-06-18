@@ -1,0 +1,564 @@
+"use client";
+
+import { useState } from "react";
+import Swal from "sweetalert2";
+import { Edit, Trash2 } from "lucide-react";
+import { CAMPOS } from "./constants";
+import { getFilaKey, normalizarFecha } from "./utils";
+
+interface Props {
+  modoNoche: boolean;
+  dataBackendFiltrada: any[];
+  dataBackend: any[];
+  setDataBackend: React.Dispatch<React.SetStateAction<any[]>>;
+  inspeccionesFiltradas: [string, any[]][];
+  valores: Record<string, Record<number, { c?: string; nc?: string }>>;
+  observaciones: Record<string, string>;
+  fechaSesion: string;
+  editandoGrupo: string | null;
+  setEditandoGrupo: (value: string | null) => void;
+  handleChange: (filaKey: string, campo: number, tipo: "c" | "nc", value: string) => void;
+  handleObs: (filaKey: string, value: string) => void;
+  calcularTotalFila: (filaKey: string, registro: any) => number;
+  guardarFila: (filaKey: string, area: any, registro: any) => void;
+  guardarTodo: (responsableGrupo: string, fecha: string) => void;
+  eliminarInspeccionGrupo: (responsableGrupo: string, fecha: string) => void;
+  estilos: Record<string, string>;
+}
+
+export default function EnergiaTabla({
+  modoNoche,
+  dataBackendFiltrada,
+  dataBackend,
+  setDataBackend,
+  inspeccionesFiltradas,
+  valores,
+  observaciones,
+  fechaSesion,
+  editandoGrupo,
+  setEditandoGrupo,
+  handleChange,
+  handleObs,
+  calcularTotalFila,
+  guardarFila,
+  guardarTodo,
+  eliminarInspeccionGrupo,
+  estilos,
+}: Props) {
+  const [editandoAreaId, setEditandoAreaId] = useState<number | null>(null);
+  const [nombreEditado, setNombreEditado] = useState("");
+  const [confirmarEliminarId, setConfirmarEliminarId] = useState<number | null>(null);
+
+  const iniciarEdicionArea = (area: any) => {
+    setEditandoAreaId(area.id);
+    setNombreEditado(area.nombre);
+    setConfirmarEliminarId(null);
+  };
+
+  const cancelarEdicionArea = () => {
+    setEditandoAreaId(null);
+    setNombreEditado("");
+  };
+
+  const guardarEdicionArea = async () => {
+    const nombre = nombreEditado.trim();
+    if (!editandoAreaId || !nombre) return;
+
+    try {
+      const res = await fetch("/api/areas-energia", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editandoAreaId,
+          nombre,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Error actualizando área");
+
+      setDataBackend((prev) =>
+        prev.map((item) => (item.id === editandoAreaId ? { ...item, nombre } : item))
+      );
+
+      setEditandoAreaId(null);
+      setNombreEditado("");
+      Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Área actualizada", timer: 1200, showConfirmButton: false });
+    } catch (error) {
+      console.error(error);
+      Swal.fire({ toast: true, position: "top-end", icon: "error", title: "Error al editar", timer: 1200, showConfirmButton: false });
+    }
+  };
+
+  const eliminarArea = async (id: number) => {
+    const confirm = await Swal.fire({
+      title: "¿Eliminar área?",
+      text: "Se borrarán todos los datos asociados",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    try {
+      const res = await fetch(`/api/areas-energia?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Error eliminando área");
+
+      setDataBackend((prev) => prev.filter((item) => item.id !== id));
+      setConfirmarEliminarId(null);
+      Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Área eliminada", timer: 1200, showConfirmButton: false });
+    } catch (error) {
+      console.error(error);
+      Swal.fire({ toast: true, position: "top-end", icon: "error", title: "Error al eliminar", timer: 1200, showConfirmButton: false });
+    }
+  };
+  return (
+    <div className={`lg:block p-4 rounded-2xl ${modoNoche ? "bg-[#0f0f0f]" : "bg-gray-100"}`}>
+      {inspeccionesFiltradas.map(([clave, registros]) => {
+        const [anio, semana, responsableGrupo] = clave.split("__");
+        const fechaGrupo = registros[0]?.fecha?.split("T")[0] || fechaSesion;
+
+        return (
+          <div
+            key={clave}
+            className={`mb-10 rounded-2xl p-5 shadow-sm ${
+              modoNoche
+                ? "bg-[#161616] border border-[#2a2a2a]"
+                : "bg-white border border-gray-200"
+            }`}
+          >
+            {/* CABECERA DEL GRUPO */}
+            <div className={`mb-6 rounded-2xl p-5 border-2 ${
+              modoNoche
+                ? "bg-gradient-to-r from-[#1a1a1a] to-[#222] border-[#333]"
+                : "bg-gradient-to-r from-white to-gray-50 border-gray-200"
+            }`}>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                      modoNoche ? "bg-yellow-600/20" : "bg-yellow-100"
+                    }`}>
+                      <span className="text-xl">⚡</span>
+                    </div>
+                    <div>
+                      <h2 className={`text-xl font-bold ${modoNoche ? "text-white" : "text-gray-800"}`}>
+                        Inspección Semana {semana.replace("semana", "")}
+                      </h2>
+                      <p className={`text-sm ${modoNoche ? "text-gray-400" : "text-gray-500"}`}>
+                        Año {anio}
+                      </p>
+                    </div>
+                  </div>
+
+                  {registros.length > 0 && (
+                    <div className="flex items-center gap-2 mt-3">
+                      <span className={`text-xs font-medium px-3 py-1 rounded-full ${
+                        modoNoche ? "bg-green-900/30 text-green-300" : "bg-green-100 text-green-700"
+                      }`}>
+                        📅 {new Date(registros[0].fecha).toLocaleDateString("es-CO", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </span>
+                      <span className={`text-xs font-medium px-3 py-1 rounded-full ${
+                        modoNoche ? "bg-blue-900/30 text-blue-300" : "bg-blue-100 text-blue-700"
+                      }`}>
+                        📊 {registros.length} áreas
+                      </span>
+                      <span className={`text-xs font-medium px-3 py-1 rounded-full ${
+                        modoNoche ? "bg-purple-900/30 text-purple-300" : "bg-purple-100 text-purple-700"
+                      }`}>
+                        � {responsableGrupo || registros[0]?.responsable || "Sin responsable"}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => eliminarInspeccionGrupo(responsableGrupo, fechaGrupo)}
+                  className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg ${
+                    modoNoche
+                      ? "bg-red-600 text-white hover:bg-red-700 shadow-red-900/30"
+                      : "bg-red-500 text-white hover:bg-red-600 shadow-red-500/30"
+                  }`}
+                >
+                  <Trash2 size={16} />
+                  Eliminar
+                </button>
+              </div>
+            </div>
+
+            {/* TABLA PRINCIPAL */}
+            <div
+              className={`overflow-auto rounded-2xl border-2 ${
+                modoNoche ? "bg-[#1a1a1a] border-[#333]" : "bg-white border-gray-200"
+              }`}
+            >
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr
+                    className={`text-center text-xs uppercase font-bold ${
+                      modoNoche
+                        ? "text-gray-300 bg-gradient-to-r from-[#222] to-[#2a2a2a]"
+                        : "text-gray-600 bg-gradient-to-r from-gray-100 to-gray-50"
+                    }`}
+                  >
+                    <th className={`p-4 border-b-2 ${modoNoche ? "border-[#444]" : "border-gray-300"}`}>
+                      📍 Área de energía
+                    </th>
+                    {CAMPOS.map((c) => (
+                      <th
+                        key={c.key}
+                        className={`p-4 border-b-2 ${modoNoche ? "border-[#444]" : "border-gray-300"}`}
+                      >
+                        <div className="flex flex-col items-center gap-1">
+                          <c.icon className={`w-6 h-6 ${c.color}`} />
+                          <span>{c.nombre}</span>
+                        </div>
+                      </th>
+                    ))}
+                    <th className={`p-4 border-b-2 ${modoNoche ? "border-[#444]" : "border-gray-300"}`}>
+                      📝 Observaciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dataBackendFiltrada.map((area: any) => {
+                    const filaKey = getFilaKey(fechaGrupo, responsableGrupo, area.id);
+                    const registro = registros.find(
+                      (r) =>
+                        r.area_id === area.id &&
+                        r.responsable === responsableGrupo &&
+                        normalizarFecha(r.fecha) === fechaGrupo
+                    );
+
+                    return (
+                      <tr
+                        key={filaKey}
+                        className={`transition ${
+                          modoNoche
+                            ? "bg-[#181818] hover:bg-[#1f1f1f]"
+                            : "bg-white hover:bg-gray-50"
+                        }`}
+                      >
+                        {/* NOMBRE ÁREA */}
+                        <td className={`p-3 border ${modoNoche ? "border-[#353535]" : "border-gray-200"}`}>
+                          <input
+                            disabled={editandoGrupo !== clave}
+                            value={area.nombre || ""}
+                            onChange={(e) => {
+                              const nuevo = e.target.value;
+                              setDataBackend((prev) =>
+                                prev.map((item) =>
+                                  item.id === area.id ? { ...item, nombre: nuevo } : item
+                                )
+                              );
+                            }}
+                            onKeyDown={async (e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                const valor = String(area.nombre || "").trim();
+                                try {
+                                  if (!valor) {
+                                    const res = await fetch(`/api/areas-energia?id=${area.id}`, {
+                                      method: "DELETE",
+                                    });
+                                    if (!res.ok) throw new Error(await res.text());
+                                    setDataBackend((prev) => prev.filter((item) => item.id !== area.id));
+                                    Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Área eliminada", timer: 1200, showConfirmButton: false });
+                                    return;
+                                  }
+
+                                  const duplicada = dataBackend.some(
+                                    (a) =>
+                                      a.id !== area.id &&
+                                      String(a?.nombre || "").toLowerCase().trim() === valor.toLowerCase()
+                                  );
+                                  if (duplicada) {
+                                    Swal.fire({ toast: true, position: "top-end", icon: "warning", title: "Ya existe un área con ese nombre", timer: 1400, showConfirmButton: false });
+                                    return;
+                                  }
+
+                                  const res = await fetch("/api/areas-energia", {
+                                    method: "PUT",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ id: area.id, nombre: valor }),
+                                  });
+                                  if (!res.ok) throw new Error(await res.text());
+                                  setDataBackend((prev) =>
+                                    prev.map((item) => item.id === area.id ? { ...item, nombre: valor } : item)
+                                  );
+                                  Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Área actualizada", timer: 1200, showConfirmButton: false });
+                                } catch (error) {
+                                  console.error(error);
+                                  Swal.fire({ icon: "error", title: "Error", text: "No se pudo actualizar/eliminar el área" });
+                                }
+                              }
+                            }}
+                            className={`w-full text-center font-semibold rounded-xl px-3 py-2 ${
+                              modoNoche ? "bg-[#222] text-white" : "bg-gray-50 text-gray-800"
+                            }`}
+                          />
+                        </td>
+
+                        {/* CAMPOS */}
+                        {CAMPOS.map((c) => {
+                          const cVal =
+                            valores?.[filaKey]?.[c.key]?.c !== undefined
+                              ? Number(valores[filaKey][c.key].c || 0)
+                              : registro
+                              ? Number(registro?.[`${c.db}_c`] || 0)
+                              : 0;
+                          const ncVal =
+                            valores?.[filaKey]?.[c.key]?.nc !== undefined
+                              ? Number(valores[filaKey][c.key].nc || 0)
+                              : registro
+                              ? Number(registro?.[`${c.db}_nc`] || 0)
+                              : 0;
+                          const total = cVal + ncVal;
+
+                          return (
+                            <td
+                              key={c.key}
+                              className={`p-2 border ${modoNoche ? "border-[#353535]" : "border-gray-200"}`}
+                            >
+                              <div className={`rounded-xl p-2 ${modoNoche ? "bg-[#202020]" : "bg-gray-50"}`}>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <input
+                                    disabled={editandoGrupo !== clave}
+                                    value={
+                                      valores?.[filaKey]?.[c.key]?.c !== undefined
+                                        ? valores[filaKey][c.key].c
+                                        : registro
+                                        ? String(registro?.[`${c.db}_c`] || "")
+                                        : ""
+                                    }
+                                    onChange={(e) => handleChange(filaKey, c.key, "c", e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") {
+                                        e.preventDefault();
+                                        guardarFila(filaKey, area, registro);
+                                      }
+                                    }}
+                                    placeholder="0"
+                                    className={`w-full text-center rounded-lg py-1 border font-semibold transition ${
+                                      editandoGrupo === clave ? "ring-2 ring-green-500" : ""
+                                    } ${
+                                      modoNoche
+                                        ? "bg-[#111] text-white border-[#2f2f2f]"
+                                        : "bg-white text-gray-700 border-gray-200"
+                                    }`}
+                                  />
+                                  <input
+                                    disabled={editandoGrupo !== clave}
+                                    value={
+                                      valores?.[filaKey]?.[c.key]?.nc !== undefined
+                                        ? valores[filaKey][c.key].nc
+                                        : registro
+                                        ? String(registro?.[`${c.db}_nc`] || "")
+                                        : ""
+                                    }
+                                    onChange={(e) => handleChange(filaKey, c.key, "nc", e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") {
+                                        e.preventDefault();
+                                        guardarFila(filaKey, area, registro);
+                                      }
+                                    }}
+                                    placeholder="0"
+                                    className={`w-full text-center rounded-lg py-1 border font-semibold transition ${
+                                      editandoGrupo === clave ? "ring-2 ring-red-500" : ""
+                                    } ${
+                                      modoNoche
+                                        ? "bg-[#111] text-white border-[#2f2f2f]"
+                                        : "bg-white text-gray-700 border-gray-200"
+                                    }`}
+                                  />
+                                </div>
+                                <div
+                                  className={`mt-2 text-center text-xs font-semibold py-1 rounded-lg border ${
+                                    modoNoche
+                                      ? "bg-blue-900/20 text-blue-300 border-blue-800/40"
+                                      : "bg-blue-50 text-blue-700 border-blue-200"
+                                  }`}
+                                >
+                                  {total}
+                                </div>
+                              </div>
+                            </td>
+                          );
+                        })}
+
+                        {/* OBSERVACIONES */}
+                        <td className={`p-3 border ${modoNoche ? "border-[#353535]" : "border-gray-200"}`}>
+                          <div className="flex flex-col gap-2">
+                            <textarea
+                              disabled={editandoGrupo !== clave}
+                              value={
+                                observaciones[filaKey] !== undefined
+                                  ? observaciones[filaKey]
+                                  : registro?.observacion || ""
+                              }
+                              onChange={(e) => handleObs(filaKey, e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                  e.preventDefault();
+                                  guardarFila(filaKey, area, registro);
+                                }
+                              }}
+                              placeholder="Escribe una observación..."
+                              className={`w-full p-2 rounded-xl border transition ${
+                                editandoGrupo === clave ? "ring-2 ring-blue-500" : ""
+                              } ${
+                                modoNoche
+                                  ? "bg-[#222] text-white border-[#2f2f2f]"
+                                  : "bg-gray-50 text-gray-800 border-gray-200"
+                              }`}
+                            />
+                            <div
+                              className={`text-center text-sm font-semibold py-2 rounded-xl border ${
+                                modoNoche
+                                  ? "bg-green-900/20 text-green-300 border-green-800/40"
+                                  : "bg-green-50 text-green-700 border-green-200"
+                              }`}
+                            >
+                              Total: {calcularTotalFila(filaKey, registro)}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* TABLA RESUMEN */}
+            <div
+              className={`mt-8 overflow-auto rounded-2xl border-2 ${
+                modoNoche ? "bg-[#1a1a1a] border-[#333]" : "bg-white border-gray-200"
+              }`}
+            >
+              <div className={`p-4 border-b-2 ${modoNoche ? "border-[#444]" : "border-gray-300"}`}>
+                <h3 className={`text-lg font-bold ${modoNoche ? "text-white" : "text-gray-800"}`}>
+                  📊 Resumen de la Inspección
+                </h3>
+                <p className={`text-sm mt-1 ${modoNoche ? "text-gray-400" : "text-gray-500"}`}>
+                  Totales por categoría de energía
+                </p>
+              </div>
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className={`text-center text-xs uppercase font-bold ${modoNoche ? "bg-gradient-to-r from-red-900 to-red-700" : "bg-gradient-to-r from-red-600 to-red-500"} text-white`}>
+                    <th className={`p-4 border-b-2 ${modoNoche ? "border-[#444]" : "border-red-400"}`}>Tipo</th>
+                    <th className={`p-4 border-b-2 ${modoNoche ? "border-[#444]" : "border-red-400"}`}>✔ Cumple</th>
+                    <th className={`p-4 border-b-2 ${modoNoche ? "border-[#444]" : "border-red-400"}`}>✖ No cumple</th>
+                    <th className={`p-4 border-b-2 ${modoNoche ? "border-[#444]" : "border-red-400"}`}>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {CAMPOS.map((c) => {
+                    let totalC = 0;
+                    let totalNC = 0;
+                    registros.forEach((r) => {
+                      totalC += Number(r?.[`${c.db}_c`] || 0);
+                      totalNC += Number(r?.[`${c.db}_nc`] || 0);
+                    });
+                    return (
+                      <tr
+                        key={c.key}
+                        className={`${modoNoche ? "bg-[#181818] hover:bg-[#1f1f1f]" : "bg-white hover:bg-gray-50"} transition`}
+                      >
+                        <td className={`p-4 border font-semibold ${modoNoche ? "border-[#353535]" : "border-gray-200"}`}>
+                          <div className="flex items-center gap-2">
+                            <c.icon className={`w-5 h-5 ${c.color}`} />
+                            {c.nombre}
+                          </div>
+                        </td>
+                        <td className={`p-4 border text-center ${modoNoche ? "border-[#353535]" : "border-gray-200"}`}>
+                          <span className={`inline-block px-3 py-1 rounded-lg font-semibold ${
+                            modoNoche ? "bg-green-900/30 text-green-300" : "bg-green-100 text-green-700"
+                          }`}>
+                            {totalC}
+                          </span>
+                        </td>
+                        <td className={`p-4 border text-center ${modoNoche ? "border-[#353535]" : "border-gray-200"}`}>
+                          <span className={`inline-block px-3 py-1 rounded-lg font-semibold ${
+                            modoNoche ? "bg-red-900/30 text-red-300" : "bg-red-100 text-red-700"
+                          }`}>
+                            {totalNC}
+                          </span>
+                        </td>
+                        <td className={`p-4 border text-center font-bold ${modoNoche ? "border-[#353535]" : "border-gray-200"}`}>
+                          <span className={`inline-block px-3 py-1 rounded-lg font-bold ${
+                            modoNoche ? "bg-blue-900/30 text-blue-300" : "bg-blue-100 text-blue-700"
+                          }`}>
+                            {totalC + totalNC}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+
+                  {/* TOTAL GENERAL */}
+                  <tr className={`font-bold ${modoNoche ? "bg-gradient-to-r from-[#222] to-[#2a2a2a]" : "bg-gradient-to-r from-gray-100 to-gray-200"}`}>
+                    <td className={`p-4 border ${modoNoche ? "border-[#353535]" : "border-gray-200"}`}>📊 TOTAL GENERAL</td>
+                    <td className={`p-4 border text-center ${modoNoche ? "border-[#353535]" : "border-gray-200"}`}>
+                      <span className={`inline-block px-3 py-1 rounded-lg font-bold ${
+                        modoNoche ? "bg-green-900/40 text-green-300" : "bg-green-200 text-green-800"
+                      }`}>
+                        {(() => {
+                          let total = 0;
+                          registros.forEach((r) => {
+                            total += Number(r?.bombillas_c || 0) + Number(r?.reflectores_c || 0) +
+                            Number(r?.lamparas_c || 0) + Number(r?.aires_c || 0);
+                          });
+                          return total;
+                        })()}
+                      </span>
+                    </td>
+                    <td className={`p-4 border text-center ${modoNoche ? "border-[#353535]" : "border-gray-200"}`}>
+                      <span className={`inline-block px-3 py-1 rounded-lg font-bold ${
+                        modoNoche ? "bg-red-900/40 text-red-300" : "bg-red-200 text-red-800"
+                      }`}>
+                        {(() => {
+                          let total = 0;
+                          registros.forEach((r) => {
+                            total += Number(r?.bombillas_nc || 0) + Number(r?.reflectores_nc || 0) +
+                            Number(r?.lamparas_nc || 0) + Number(r?.aires_nc || 0);
+                          });
+                          return total;
+                        })()}
+                      </span>
+                    </td>
+                    <td className={`p-4 border text-center ${modoNoche ? "border-[#353535]" : "border-gray-200"}`}>
+                      <span className={`inline-block px-3 py-1 rounded-lg font-bold ${
+                        modoNoche ? "bg-blue-900/40 text-blue-300" : "bg-blue-200 text-blue-800"
+                      }`}>
+                        {(() => {
+                          let total = 0;
+                          registros.forEach((r) => {
+                            total += Number(r?.total || 0);
+                          });
+                          return total;
+                        })()}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}

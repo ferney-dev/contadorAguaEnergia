@@ -8,7 +8,8 @@ import {
   AlertTriangle,
   Lock,
   User,
-  MapPin
+  MapPin,
+  Calendar
 } from "lucide-react";
 type ValoresType = {
   [campo: number]: {
@@ -43,6 +44,7 @@ export default function MovilReciclaje({
   const [guardando, setGuardando] = useState(false);
   const [busquedaArea, setBusquedaArea] = useState("");
   const [mostrarLista, setMostrarLista] = useState(false);
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(() => new Date().toISOString().split("T")[0]);
 
   const areasFiltradas = dataBackend.filter((a: any) =>
     a.nombre.toLowerCase().includes(busquedaArea.toLowerCase())
@@ -85,7 +87,7 @@ export default function MovilReciclaje({
   };
 
   const guardar = async () => {
-    if (!areaId || !responsable) {
+    if (!areaId || !responsable || !fechaSeleccionada) {
       Swal.fire({
         toast: true,
         position: "top-end",
@@ -97,8 +99,7 @@ export default function MovilReciclaje({
       return;
     }
 
-    const hoy = new Date().toISOString().split("T")[0];
-    const semanaActual = obtenerInicioSemana(hoy);
+    const semanaSeleccionada = obtenerInicioSemana(fechaSeleccionada);
 
     const yaExiste = await fetch("/api/inspecciones-residuos")
       .then(res => res.json())
@@ -107,7 +108,7 @@ export default function MovilReciclaje({
           return (
             item.area_id === Number(areaId) &&
             item.responsable === responsable &&
-            obtenerInicioSemana(item.fecha) === semanaActual
+            item.fecha.split("T")[0] === fechaSeleccionada
           );
         });
       });
@@ -117,7 +118,7 @@ export default function MovilReciclaje({
         toast: true,
         position: "top-end",
         icon: "warning",
-        title: "⚠️ Ya creaste esta área hoy",
+        title: "⚠️ Ya existe inspección para esta fecha",
         timer: 1500,
         showConfirmButton: false,
       });
@@ -129,7 +130,7 @@ export default function MovilReciclaje({
 
     try {
       const body = {
-        fecha: new Date().toISOString().split("T")[0],
+        fecha: fechaSeleccionada,
         responsable,
         area_id: Number(areaId),
 
@@ -219,6 +220,23 @@ export default function MovilReciclaje({
 
 
             <div className="p-4 space-y-4">
+
+              {/* FECHA */}
+              <div
+                className={`flex items-center gap-2 p-3 rounded-xl border transition
+    ${modoNoche
+                    ? "bg-[#161616] border-white/10 text-white"
+                    : "bg-gray-50 border-gray-200 text-gray-800"
+                  }`}
+              >
+                <Calendar className="text-blue-500" size={18} />
+                <input
+                  type="date"
+                  value={fechaSeleccionada}
+                  onChange={(e) => setFechaSeleccionada(e.target.value)}
+                  className="w-full bg-transparent outline-none text-sm"
+                />
+              </div>
 
               {/* RESPONSABLE */}
               <div

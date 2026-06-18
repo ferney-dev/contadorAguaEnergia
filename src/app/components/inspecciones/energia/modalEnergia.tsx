@@ -10,6 +10,7 @@ import {
   Fan,
   Search,
   X,
+  Calendar,
 } from "lucide-react";
 
 type ValoresType = {
@@ -47,6 +48,7 @@ export default function MovilEnergia({
   const [observacion, setObservacion] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [valores, setValores] = useState<ValoresType>({});
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(() => new Date().toISOString().split("T")[0]);
 
   const areasFiltradas = Array.isArray(dataBackend)
     ? dataBackend.filter((a: any) =>
@@ -103,20 +105,19 @@ export default function MovilEnergia({
     Number(valores?.[4]?.nc || 0);
 
 const guardar = async () => {
-  if (!responsable.trim() || !areaId) {
+  if (!responsable.trim() || !areaId || !fechaSeleccionada) {
     Swal.fire({
       toast: true,
       position: "top-end",
       icon: "warning",
-      title: "Debes completar responsable y área",
+      title: "Debes completar responsable, área y fecha",
       timer: 1500,
       showConfirmButton: false,
     });
     return;
   }
 
-  const hoy = new Date().toISOString().split("T")[0];
-  const semanaActual = obtenerInicioSemana(hoy);
+  const semanaSeleccionada = obtenerInicioSemana(fechaSeleccionada);
 
   const yaExiste = await fetch("/api/inspecciones-energia")
     .then(res => res.json())
@@ -125,7 +126,7 @@ const guardar = async () => {
         return (
           item.area_id === Number(areaId) &&
           item.responsable === responsable &&
-          obtenerInicioSemana(item.fecha) === semanaActual
+          item.fecha.split("T")[0] === fechaSeleccionada
         );
       });
     });
@@ -135,7 +136,7 @@ const guardar = async () => {
       toast: true,
       position: "top-end",
       icon: "warning",
-      title: "⚠️ Ya elegiste esta área hoy",
+      title: "⚠️ Ya existe inspección para esta fecha",
       timer: 1500,
       showConfirmButton: false,
     });
@@ -147,7 +148,7 @@ const guardar = async () => {
 
   try {
     const body = {
-      fecha: hoy,
+      fecha: fechaSeleccionada,
       responsable: responsable.trim(),
       area_id: Number(areaId),
 
@@ -276,6 +277,23 @@ const guardar = async () => {
       </div>
 
       <div className="p-5 space-y-4">
+
+        {/* FECHA */}
+        <div
+          className={`flex items-center gap-3 px-3 py-3 rounded-xl border transition ${
+            modoNoche
+              ? "bg-[#181818] border-[#2e2e2e]"
+              : "bg-gray-50 border-gray-200"
+          }`}
+        >
+          <Calendar className="text-blue-500" size={18} />
+          <input
+            type="date"
+            value={fechaSeleccionada}
+            onChange={(e) => setFechaSeleccionada(e.target.value)}
+            className="w-full bg-transparent outline-none text-sm"
+          />
+        </div>
 
         {/* RESPONSABLE */}
         <div

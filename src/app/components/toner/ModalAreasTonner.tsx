@@ -121,21 +121,25 @@ export default function ModalAreasTonner({
   };
 
   return (
-  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-3">
-
-    {/* 🔥 MODAL RESPONSIVE */}
-    <div className="
-      w-full max-w-md mx-auto
-      max-w-md 
-      sm:max-w-lg 
-      md:max-w-xl 
-      lg:max-w-md
-      bg-white dark:bg-[#121212]
-      rounded-2xl 
-      shadow-2xl 
-      overflow-hidden
-      animate-fadeIn
-    ">
+ <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+ 
+  <div
+        className="
+          relative
+          z-10
+          w-full
+          md:w-[1200px]
+          max-h-[92vh]
+          overflow-hidden
+          rounded-[34px]
+          bg-[#f8f8f8]
+          shadow-[0_25px_80px_rgba(0,0,0,0.45)]
+          border
+          border-red-950/20
+          flex
+          flex-col
+        "
+      >
 
       {/* 🔴 HEADER */}
       <div className="bg-gradient-to-r from-red-700 to-red-500 text-white px-4 sm:px-5 py-3 flex justify-between items-center">

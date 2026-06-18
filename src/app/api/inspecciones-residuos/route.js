@@ -94,18 +94,27 @@ export async function PUT(request) {
 ========================= */
 export async function DELETE(request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (id) {
+      const res = await fetch(
+        `${BACKEND_URL}/inspecciones-residuos?id=${id}`,
+        { method: "DELETE" }
+      );
+      const data = await res.json();
+      return Response.json(data, { status: res.status });
+    }
+
     const body = await request.json();
 
-    const res = await fetch(
-      `${BACKEND_URL}/inspecciones-residuos`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      }
-    );
+    const res = await fetch(`${BACKEND_URL}/inspecciones-residuos`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
 
     const data = await res.json();
 

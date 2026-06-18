@@ -29,7 +29,7 @@ export async function POST(request) {
   try {
     const body = await request.json();
 
-    const res = await fetch(`${BACKEND_URL}/comparativoAgua`, {
+    const res = await fetch(`${BACKEND_URL}/comparativoAgua/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -37,7 +37,16 @@ export async function POST(request) {
       body: JSON.stringify(body)
     });
 
-    const data = await res.json();
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return Response.json(
+        { error: "Respuesta inválida del backend", detail: text },
+        { status: res.status || 500 }
+      );
+    }
 
     return Response.json(data, { status: res.status });
 

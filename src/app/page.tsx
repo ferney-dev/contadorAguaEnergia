@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback } from "react";
 import {
   Home,
   Droplet,
@@ -29,6 +29,44 @@ import Inspecciones from "./components/inspecciones/inspecciones";
 import Resmas from "./components/resmas/resmas";
 import Tonner from "./components/toner/toner";
 
+const IDS_VISTAS = [
+  "inicio",
+  "agua",
+  "energía",
+  "lecturas",
+  "comparativoagua",
+  "comparativoenergia",
+  "inspecciones",
+  "resmas",
+  "tonner",
+];
+
+function leerVistaDesdeUrl(): string {
+  if (typeof window === "undefined") return "inicio";
+
+  const vista = new URLSearchParams(window.location.search).get("vista");
+
+  return vista && IDS_VISTAS.includes(vista) ? vista : "inicio";
+}
+
+function actualizarUrlVista(vista: string, reemplazar = false) {
+  const url = new URL(window.location.href);
+
+  if (vista === "inicio") {
+    url.searchParams.delete("vista");
+  } else {
+    url.searchParams.set("vista", vista);
+  }
+
+  const destino = `${url.pathname}${url.search}`;
+
+  if (reemplazar) {
+    window.history.replaceState({ vista }, "", destino);
+  } else {
+    window.history.pushState({ vista }, "", destino);
+  }
+}
+
 export default function MenuPrincipal() {
 
   /* ================= ESTADOS ================= */
@@ -38,6 +76,25 @@ export default function MenuPrincipal() {
   const [vistaActual, setVistaActual] = useState("inicio");
   const [modoNoche, setModoNoche] = useState(false);
   const [anioActual, setAnioActual] = useState(new Date().getFullYear());
+
+  const navegarVista = useCallback((id: string) => {
+    setVistaActual(id);
+    actualizarUrlVista(id);
+  }, []);
+
+  /* ================= RESTAURAR VISTA DESDE URL ================= */
+
+  useLayoutEffect(() => {
+    setVistaActual(leerVistaDesdeUrl());
+
+    const onPopState = () => {
+      setVistaActual(leerVistaDesdeUrl());
+    };
+
+    window.addEventListener("popstate", onPopState);
+
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
 
   /* ================= DETECTAR MÓVIL ================= */
 
@@ -292,7 +349,7 @@ export default function MenuPrincipal() {
                 <button
                   key={i}
                   onClick={() => {
-                    setVistaActual(op.id);
+                    navegarVista(op.id);
                     handleClickOpcion();
                   }}
                   className={`

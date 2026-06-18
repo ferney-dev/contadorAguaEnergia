@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
-import {User,MapPin,Bath,Droplet,ShowerHead,Toilet,Pipette,} from "lucide-react";
+import {User,MapPin,Bath,Droplet,ShowerHead,Toilet,Pipette,Calendar,} from "lucide-react";
 
 type ValoresType = {
   [campo: number]: {
@@ -34,6 +34,7 @@ export default function MovilSanitario({
   const [areaId, setAreaId] = useState("");
   const [busquedaArea, setBusquedaArea] = useState("");
   const [mostrarLista, setMostrarLista] = useState(false);
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(() => new Date().toISOString().split("T")[0]);
 
   const [valores, setValores] = useState<ValoresType>({});
   const [observacion, setObservacion] = useState("");
@@ -77,7 +78,7 @@ export default function MovilSanitario({
   };
 
   const guardar = async () => {
-  if (!areaId || !responsable) {
+  if (!areaId || !responsable || !fechaSeleccionada) {
     Swal.fire({
       toast: true,
       position: "top-end",
@@ -89,8 +90,7 @@ export default function MovilSanitario({
     return;
   }
 
-const hoy = new Date().toISOString().split("T")[0];
-    const semanaActual = obtenerInicioSemana(hoy);
+    const semanaSeleccionada = obtenerInicioSemana(fechaSeleccionada);
 
     const yaExiste = await fetch("/api/inspecciones-sanitarias")
       .then(res => res.json())
@@ -99,7 +99,7 @@ const hoy = new Date().toISOString().split("T")[0];
           return (
             item.area_id === Number(areaId) &&
             item.responsable === responsable &&
-            obtenerInicioSemana(item.fecha) === semanaActual
+            item.fecha.split("T")[0] === fechaSeleccionada
         );
       });
     });
@@ -109,7 +109,7 @@ const hoy = new Date().toISOString().split("T")[0];
       toast: true,
       position: "top-end",
       icon: "warning",
-      title: "⚠️ Ya creaste esta área hoy",
+      title: "⚠️ Ya existe inspección para esta fecha",
       timer: 1500,
       showConfirmButton: false,
     });
@@ -121,7 +121,7 @@ const hoy = new Date().toISOString().split("T")[0];
 
   try {
     const body = {
-      fecha: hoy,
+      fecha: fechaSeleccionada,
       responsable,
       area_id: Number(areaId),
 
@@ -184,6 +184,23 @@ const hoy = new Date().toISOString().split("T")[0];
     {mostrarModal && (
  <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end justify-center z-50 px-2 sm:px-4">
   
+   <div
+        className="
+          relative
+          z-10
+          w-full
+          md:w-[1200px]
+          max-h-[92vh]
+          overflow-hidden
+          rounded-[34px]
+          bg-[#f8f8f8]
+          shadow-[0_25px_80px_rgba(0,0,0,0.45)]
+          border
+          border-red-950/20
+          flex
+          flex-col
+        "
+      >
   <div
   className={`w-full max-w-sm sm:max-w-md md:max-w-lg rounded-2xl overflow-hidden 
   shadow-[0_15px_40px_rgba(0,0,0,0.25)] border transition-all
@@ -216,6 +233,24 @@ const hoy = new Date().toISOString().split("T")[0];
       </div>
 
       <div className="p-5 space-y-4">
+
+        {/* FECHA */}
+        <div
+          className={`flex items-center gap-3 px-3 py-3 rounded-xl border transition
+          ${
+            modoNoche
+              ? "bg-[#181818] border-[#2e2e2e]"
+              : "bg-gray-50 border-gray-200"
+          }`}
+        >
+          <Calendar className="text-blue-500" size={18} />
+          <input
+            type="date"
+            value={fechaSeleccionada}
+            onChange={(e) => setFechaSeleccionada(e.target.value)}
+            className="w-full bg-transparent outline-none text-sm"
+          />
+        </div>
 
         {/* RESPONSABLE */}
         <div
@@ -386,6 +421,7 @@ const hoy = new Date().toISOString().split("T")[0];
 
       </div>
     </div>
+  </div>
   </div>
 )}
     </>

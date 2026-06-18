@@ -25,10 +25,15 @@ export async function GET(request) {
     url += `?${params.toString()}`;
   }
 
-  const res = await fetch(url);
-  const data = await res.json();
-
-  return Response.json(data);
+  try {
+    const res = await fetch(url);
+    const text = await res.text();
+    if (!text || !text.trim()) return Response.json({ meta: 0 });
+    const data = JSON.parse(text);
+    return Response.json(data);
+  } catch {
+    return Response.json({ meta: 0 });
+  }
 }
 
 /* =========================
