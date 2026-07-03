@@ -72,44 +72,20 @@ export default function TablaResmasAvanzada({ modoNoche }: Props) {
   };
 
   return (
-    <section className={`w-full rounded-[28px] p-4 md:p-6 ${fondo}`}>
-      <div className="space-y-6">
+    <section className={`w-full rounded-[28px] p-4 md:p-8 ${fondo}`}>
+      <div className="space-y-8">
 
-        {/* Encabezado + Resumen */}
-        <div className={`rounded-[28px] p-4 md:p-5 ${card}`}>
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex items-start gap-3">
-              <div className="rounded-3xl bg-blue-600/10 p-3 text-blue-500">
-                <Files size={24} />
-              </div>
+      
+        {/* ── TARJETAS DE RESUMEN ── */}
+        <ResmasContenedores
+          card={card}
+          resumen={resumen}
+          totalMesActual={totalMesActual}
+          nombreMesActual={nombreMesActual}
+        />
 
-              <div>
-                <h2 className="text-xl font-bold md:text-2xl">
-                  Gestión avanzada de resmas
-                </h2>
-
-                <p
-                  className={`mt-1 text-sm ${
-                    modoNoche ? "text-gray-400" : "text-gray-500"
-                  }`}
-                >
-                  Consulta por año, busca áreas, crea nuevas dependencias y
-                  guarda valores automáticamente al salir de la celda.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <ResmasContenedores
-            card={card}
-            resumen={resumen}
-            totalMesActual={totalMesActual}
-            nombreMesActual={nombreMesActual}
-          />
-        </div>
-
-        {/* Tarjeta independiente para filtros */}
-        <div className={`rounded-[28px] p-4 md:p-5 ${card}`}>
+        {/* ── FILTROS ── */}
+        <div className={`rounded-[24px] p-4 md:p-5 ${card}`}>
           <ResmasFiltros
             modoNoche={modoNoche}
             card={card}
@@ -124,45 +100,46 @@ export default function TablaResmasAvanzada({ modoNoche }: Props) {
           />
         </div>
 
-        {/* Error */}
+        {/* ── ERROR ── */}
         {errorGeneral ? (
-          <div className="rounded-3xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-600">
+          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-600">
             {errorGeneral}
           </div>
         ) : null}
 
-        {/* Tablas */}
-        <div className="space-y-5">
+        {/* ── TABLAS ── */}
+        <div className="space-y-8">
+
           <div>
-            <div className="mb-2 flex items-center gap-2">
-              <div className="h-2.5 w-2.5 rounded-full bg-blue-500" />
-              <h3 className="text-sm font-bold uppercase tracking-wide">
-                Meses 1 a 6
+            <div className="mb-3 flex items-center gap-2.5">
+              <div className="h-3 w-3 rounded-full bg-blue-500" />
+              <h3 className={`text-sm font-bold uppercase tracking-widest ${modoNoche ? "text-gray-300" : "text-gray-600"}`}>
+                Enero — Junio
               </h3>
             </div>
-
             <ResmasTabla {...tablaProps} inicio={0} fin={6} />
           </div>
 
           <div>
-            <div className="mb-2 flex items-center gap-2">
-              <div className="h-2.5 w-2.5 rounded-full bg-violet-500" />
-              <h3 className="text-sm font-bold uppercase tracking-wide">
-                Meses 7 a 12
+            <div className="mb-3 flex items-center gap-2.5">
+              <div className="h-3 w-3 rounded-full bg-violet-500" />
+              <h3 className={`text-sm font-bold uppercase tracking-widest ${modoNoche ? "text-gray-300" : "text-gray-600"}`}>
+                Julio — Diciembre
               </h3>
             </div>
-
             <ResmasTabla {...tablaProps} inicio={6} fin={12} />
           </div>
+
         </div>
 
-        {/* Loader */}
-        {cargando ? (
-          <div className="fixed bottom-5 right-5 z-50 rounded-full border border-white/10 bg-slate-900 p-3 text-white shadow-xl">
-            <Loader2 className="animate-spin" size={22} />
-          </div>
-        ) : null}
       </div>
+
+      {/* ── LOADER FLOTANTE ── */}
+      {cargando ? (
+        <div className="fixed bottom-6 right-6 z-50 rounded-full border border-white/10 bg-slate-900 p-3 text-white shadow-2xl">
+          <Loader2 className="animate-spin" size={22} />
+        </div>
+      ) : null}
     </section>
   );
 }

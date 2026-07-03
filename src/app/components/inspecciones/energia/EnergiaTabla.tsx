@@ -19,6 +19,7 @@ interface Props {
   setEditandoGrupo: (value: string | null) => void;
   handleChange: (filaKey: string, campo: number, tipo: "c" | "nc", value: string) => void;
   handleObs: (filaKey: string, value: string) => void;
+  handleBlur: (filaKey: string, campo: number, tipo: "c" | "nc", value: string, areaId: number, responsableGrupo: string, fecha: string) => void;
   calcularTotalFila: (filaKey: string, registro: any) => number;
   guardarFila: (filaKey: string, area: any, registro: any) => void;
   guardarTodo: (responsableGrupo: string, fecha: string) => void;
@@ -39,6 +40,7 @@ export default function EnergiaTabla({
   setEditandoGrupo,
   handleChange,
   handleObs,
+  handleBlur,
   calcularTotalFila,
   guardarFila,
   guardarTodo,
@@ -251,62 +253,87 @@ export default function EnergiaTabla({
                       >
                         {/* NOMBRE ÁREA */}
                         <td className={`p-3 border ${modoNoche ? "border-[#353535]" : "border-gray-200"}`}>
-                          <input
-                            disabled={editandoGrupo !== clave}
-                            value={area.nombre || ""}
-                            onChange={(e) => {
-                              const nuevo = e.target.value;
-                              setDataBackend((prev) =>
-                                prev.map((item) =>
-                                  item.id === area.id ? { ...item, nombre: nuevo } : item
-                                )
-                              );
-                            }}
-                            onKeyDown={async (e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault();
-                                const valor = String(area.nombre || "").trim();
-                                try {
-                                  if (!valor) {
-                                    const res = await fetch(`/api/areas-energia?id=${area.id}`, {
-                                      method: "DELETE",
-                                    });
-                                    if (!res.ok) throw new Error(await res.text());
-                                    setDataBackend((prev) => prev.filter((item) => item.id !== area.id));
-                                    Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Área eliminada", timer: 1200, showConfirmButton: false });
-                                    return;
-                                  }
-
-                                  const duplicada = dataBackend.some(
-                                    (a) =>
-                                      a.id !== area.id &&
-                                      String(a?.nombre || "").toLowerCase().trim() === valor.toLowerCase()
-                                  );
-                                  if (duplicada) {
-                                    Swal.fire({ toast: true, position: "top-end", icon: "warning", title: "Ya existe un área con ese nombre", timer: 1400, showConfirmButton: false });
-                                    return;
-                                  }
-
-                                  const res = await fetch("/api/areas-energia", {
-                                    method: "PUT",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({ id: area.id, nombre: valor }),
-                                  });
-                                  if (!res.ok) throw new Error(await res.text());
-                                  setDataBackend((prev) =>
-                                    prev.map((item) => item.id === area.id ? { ...item, nombre: valor } : item)
-                                  );
-                                  Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Área actualizada", timer: 1200, showConfirmButton: false });
-                                } catch (error) {
-                                  console.error(error);
-                                  Swal.fire({ icon: "error", title: "Error", text: "No se pudo actualizar/eliminar el área" });
-                                }
-                              }
-                            }}
-                            className={`w-full text-center font-semibold rounded-xl px-3 py-2 ${
-                              modoNoche ? "bg-[#222] text-white" : "bg-gray-50 text-gray-800"
-                            }`}
-                          />
+                          {editandoAreaId === area.id ? (
+                            <div className="space-y-2">
+                              <input
+                                value={nombreEditado}
+                                onChange={(e) => setNombreEditado(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") guardarEdicionArea();
+                                  if (e.key === "Escape") cancelarEdicionArea();
+                                }}
+                                className={`w-full text-center font-semibold rounded-xl px-3 py-2 ${
+                                  modoNoche ? "bg-[#222] text-white border border-white/10" : "bg-gray-50 text-gray-800 border border-gray-300"
+                                }`}
+                                placeholder="Nombre del área"
+                              />
+                              <div className="flex gap-2 justify-center">
+                                <button
+                                  onClick={guardarEdicionArea}
+                                  className={`px-3 py-1 rounded-lg text-xs font-semibold ${
+                                    modoNoche ? "bg-green-700 text-white" : "bg-green-500 text-white"
+                                  }`}
+                                >
+                                  Guardar
+                                </button>
+                                <button
+                                  onClick={cancelarEdicionArea}
+                                  className={`px-3 py-1 rounded-lg text-xs font-semibold ${
+                                    modoNoche ? "bg-gray-700 text-white" : "bg-gray-500 text-white"
+                                  }`}
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <div className="font-semibold text-center px-3 py-2">{area.nombre || ""}</div>
+                              <div className="flex gap-2 justify-center">
+                                <button
+                                  onClick={() => iniciarEdicionArea(area)}
+                                  className={`p-1.5 rounded-lg transition ${
+                                    modoNoche ? "bg-blue-900/30 text-blue-300 hover:bg-blue-900/50" : "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                                  }`}
+                                  title="Editar área"
+                                >
+                                  <Edit size={14} />
+                                </button>
+                                {confirmarEliminarId === area.id ? (
+                                  <>
+                                    <button
+                                      onClick={() => eliminarArea(area.id)}
+                                      className={`p-1.5 rounded-lg transition ${
+                                        modoNoche ? "bg-red-900/30 text-red-300 hover:bg-red-900/50" : "bg-red-50 text-red-600 hover:bg-red-100"
+                                      }`}
+                                      title="Confirmar eliminar"
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                    <button
+                                      onClick={() => setConfirmarEliminarId(null)}
+                                      className={`p-1.5 rounded-lg transition ${
+                                        modoNoche ? "bg-gray-700 text-white hover:bg-gray-600" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                      }`}
+                                      title="Cancelar"
+                                    >
+                                      ✕
+                                    </button>
+                                  </>
+                                ) : (
+                                  <button
+                                    onClick={() => setConfirmarEliminarId(area.id)}
+                                    className={`p-1.5 rounded-lg transition ${
+                                      modoNoche ? "bg-red-900/30 text-red-300 hover:bg-red-900/50" : "bg-red-50 text-red-600 hover:bg-red-100"
+                                    }`}
+                                    title="Eliminar área"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </td>
 
                         {/* CAMPOS */}
@@ -332,56 +359,62 @@ export default function EnergiaTabla({
                             >
                               <div className={`rounded-xl p-2 ${modoNoche ? "bg-[#202020]" : "bg-gray-50"}`}>
                                 <div className="grid grid-cols-2 gap-2">
-                                  <input
-                                    disabled={editandoGrupo !== clave}
-                                    value={
-                                      valores?.[filaKey]?.[c.key]?.c !== undefined
-                                        ? valores[filaKey][c.key].c
-                                        : registro
-                                        ? String(registro?.[`${c.db}_c`] || "")
-                                        : ""
-                                    }
-                                    onChange={(e) => handleChange(filaKey, c.key, "c", e.target.value)}
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter") {
-                                        e.preventDefault();
-                                        guardarFila(filaKey, area, registro);
+                                  <div className="flex flex-col gap-1">
+                                    <input
+                                      value={
+                                        valores?.[filaKey]?.[c.key]?.c !== undefined
+                                          ? valores[filaKey][c.key].c
+                                          : registro
+                                          ? String(registro?.[`${c.db}_c`] || "")
+                                          : ""
                                       }
-                                    }}
-                                    placeholder="0"
-                                    className={`w-full text-center rounded-lg py-1 border font-semibold transition ${
-                                      editandoGrupo === clave ? "ring-2 ring-green-500" : ""
-                                    } ${
-                                      modoNoche
-                                        ? "bg-[#111] text-white border-[#2f2f2f]"
-                                        : "bg-white text-gray-700 border-gray-200"
-                                    }`}
-                                  />
-                                  <input
-                                    disabled={editandoGrupo !== clave}
-                                    value={
-                                      valores?.[filaKey]?.[c.key]?.nc !== undefined
-                                        ? valores[filaKey][c.key].nc
-                                        : registro
-                                        ? String(registro?.[`${c.db}_nc`] || "")
-                                        : ""
-                                    }
-                                    onChange={(e) => handleChange(filaKey, c.key, "nc", e.target.value)}
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter") {
-                                        e.preventDefault();
-                                        guardarFila(filaKey, area, registro);
+                                      onChange={(e) => handleChange(filaKey, c.key, "c", e.target.value)}
+                                      onBlur={(e) => handleBlur(filaKey, c.key, "c", e.target.value, area.id, responsableGrupo, fechaGrupo)}
+                                      placeholder="0"
+                                      className={`w-full text-center rounded-lg py-1 border font-semibold transition ${
+                                        modoNoche
+                                          ? "bg-[#111] text-white border-[#2f2f2f]"
+                                          : "bg-white text-gray-700 border-gray-200"
+                                      }`}
+                                    />
+                                    <div
+                                      className={`text-center text-xs font-semibold py-1 rounded-lg border ${
+                                        modoNoche
+                                          ? "bg-green-900/20 text-green-300 border-green-800/40"
+                                          : "bg-green-50 text-green-700 border-green-200"
+                                      }`}
+                                    >
+                                      {cVal}
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-col gap-1">
+                                    <input
+                                      value={
+                                        valores?.[filaKey]?.[c.key]?.nc !== undefined
+                                          ? valores[filaKey][c.key].nc
+                                          : registro
+                                          ? String(registro?.[`${c.db}_nc`] || "")
+                                          : ""
                                       }
-                                    }}
-                                    placeholder="0"
-                                    className={`w-full text-center rounded-lg py-1 border font-semibold transition ${
-                                      editandoGrupo === clave ? "ring-2 ring-red-500" : ""
-                                    } ${
-                                      modoNoche
-                                        ? "bg-[#111] text-white border-[#2f2f2f]"
-                                        : "bg-white text-gray-700 border-gray-200"
-                                    }`}
-                                  />
+                                      onChange={(e) => handleChange(filaKey, c.key, "nc", e.target.value)}
+                                      onBlur={(e) => handleBlur(filaKey, c.key, "nc", e.target.value, area.id, responsableGrupo, fechaGrupo)}
+                                      placeholder="0"
+                                      className={`w-full text-center rounded-lg py-1 border font-semibold transition ${
+                                        modoNoche
+                                          ? "bg-[#111] text-white border-[#2f2f2f]"
+                                          : "bg-white text-gray-700 border-gray-200"
+                                      }`}
+                                    />
+                                    <div
+                                      className={`text-center text-xs font-semibold py-1 rounded-lg border ${
+                                        modoNoche
+                                          ? "bg-red-900/20 text-red-300 border-red-800/40"
+                                          : "bg-red-50 text-red-700 border-red-200"
+                                      }`}
+                                    >
+                                      {ncVal}
+                                    </div>
+                                  </div>
                                 </div>
                                 <div
                                   className={`mt-2 text-center text-xs font-semibold py-1 rounded-lg border ${
@@ -390,7 +423,7 @@ export default function EnergiaTabla({
                                       : "bg-blue-50 text-blue-700 border-blue-200"
                                   }`}
                                 >
-                                  {total}
+                                  Total: {total}
                                 </div>
                               </div>
                             </td>
@@ -401,23 +434,14 @@ export default function EnergiaTabla({
                         <td className={`p-3 border ${modoNoche ? "border-[#353535]" : "border-gray-200"}`}>
                           <div className="flex flex-col gap-2">
                             <textarea
-                              disabled={editandoGrupo !== clave}
                               value={
                                 observaciones[filaKey] !== undefined
                                   ? observaciones[filaKey]
                                   : registro?.observacion || ""
                               }
                               onChange={(e) => handleObs(filaKey, e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" && !e.shiftKey) {
-                                  e.preventDefault();
-                                  guardarFila(filaKey, area, registro);
-                                }
-                              }}
                               placeholder="Escribe una observación..."
                               className={`w-full p-2 rounded-xl border transition ${
-                                editandoGrupo === clave ? "ring-2 ring-blue-500" : ""
-                              } ${
                                 modoNoche
                                   ? "bg-[#222] text-white border-[#2f2f2f]"
                                   : "bg-gray-50 text-gray-800 border-gray-200"

@@ -349,6 +349,87 @@ export function useInspeccionesAgua(modoNoche: boolean) {
     }));
   };
 
+  const handleBlur = async (
+    filaKey: string,
+    campo: number,
+    tipo: "c" | "nc",
+    value: string,
+    areaId: number,
+    responsableGrupo: string,
+    fecha: string
+  ) => {
+    const limpio = value.replace(/\D/g, "");
+    const valor = Number(limpio || 0);
+
+    try {
+      const registro = inspecciones.find(
+        (r) =>
+          r.area_id === areaId &&
+          r.responsable === responsableGrupo &&
+          r.fecha?.split("T")[0] === fecha
+      );
+
+      const campoDef = CAMPOS.find((c) => c.key === campo);
+      if (!campoDef) return;
+      const campoKey = `${campoDef.db}_${tipo}`;
+
+      const body = {
+        id: registro?.id || null,
+        fecha,
+        responsable: responsableGrupo,
+        area_id: areaId,
+        [campoKey]: valor,
+      };
+
+      const allValues: Record<string, number> = {
+        sanitarios_c: Number(registro?.sanitarios_c || 0),
+        sanitarios_nc: Number(registro?.sanitarios_nc || 0),
+        orinales_c: Number(registro?.orinales_c || 0),
+        orinales_nc: Number(registro?.orinales_nc || 0),
+        duchas_c: Number(registro?.duchas_c || 0),
+        duchas_nc: Number(registro?.duchas_nc || 0),
+        lavamanos_c: Number(registro?.lavamanos_c || 0),
+        lavamanos_nc: Number(registro?.lavamanos_nc || 0),
+        llaves_c: Number(registro?.llaves_c || 0),
+        llaves_nc: Number(registro?.llaves_nc || 0),
+      };
+      allValues[campoKey] = valor;
+
+      const total = Object.values(allValues).reduce((acc, v) => acc + v, 0);
+
+      if (total > 0) {
+        await fetch("/api/inspecciones-sanitarias", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...allValues, ...body }),
+        });
+
+        const res = await fetch("/api/inspecciones-sanitarias");
+        const data = await res.json();
+        setInspecciones(Array.isArray(data) ? data : data?.data || []);
+
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "success",
+          title: "Dato guardado",
+          timer: 1200,
+          showConfirmButton: false,
+        });
+      }
+    } catch (error) {
+      console.error("Error en handleBlur sanitarios:", error);
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "Error al guardar",
+        timer: 1200,
+        showConfirmButton: false,
+      });
+    }
+  };
+
   const obtenerValor = (
     filaKey: string,
     campo: number,
@@ -455,8 +536,9 @@ export function useInspeccionesAgua(modoNoche: boolean) {
           showConfirmButton: false,
         });
       } else if (total > 0) {
+        const method = "POST";
         const response = await fetch("/api/inspecciones-sanitarias", {
-          method: "POST",
+          method,
           headers: {
             "Content-Type": "application/json",
           },
@@ -653,6 +735,7 @@ export function useInspeccionesAgua(modoNoche: boolean) {
     busqueda,
     modoNuevaInspeccion,
     inspecciones,
+    setInspecciones,
     responsable,
     fechaSesion,
     mostrarModal,
@@ -675,6 +758,7 @@ export function useInspeccionesAgua(modoNoche: boolean) {
     finalizarInspeccion,
     handleChange,
     handleObs,
+    handleBlur,
     obtenerValor,
     calcularTotalFila,
     guardarFila,

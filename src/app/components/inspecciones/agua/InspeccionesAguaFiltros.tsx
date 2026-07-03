@@ -1,6 +1,7 @@
 "use client";
 
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, Plus } from "lucide-react";
+import Swal from "sweetalert2";
 import type { UseInspeccionesAguaReturn } from "../../../hooks/useInspeccionesAgua";
 
 interface Props {
@@ -15,6 +16,10 @@ interface Props {
   aniosDisponibles: string[];
   MESES: UseInspeccionesAguaReturn["MESES"];
   dataBackend: any[];
+  inspeccionesFiltradas: [string, any[]][];
+  fechaActual: string;
+  responsable: string;
+  setDataBackend: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 export default function InspeccionesAguaFiltros({
@@ -29,24 +34,24 @@ export default function InspeccionesAguaFiltros({
   aniosDisponibles,
   MESES,
   dataBackend,
+  inspeccionesFiltradas,
+  fechaActual,
+  responsable,
+  setDataBackend,
 }: Props) {
   return (
     <div className={`rounded-2xl p-4 ${estilos.inputSuave}`}>
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <Filter size={16} />
-          <h3 className="text-sm sm:text-base font-semibold">
-            Filtros de búsqueda
-          </h3>
+          <h3 className="text-sm sm:text-base font-semibold">Filtros de búsqueda</h3>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+        {/* BUSCAR */}
         <div className="relative">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 opacity-60"
-          />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-60" />
           <input
             type="text"
             value={busqueda}
@@ -56,6 +61,7 @@ export default function InspeccionesAguaFiltros({
           />
         </div>
 
+        {/* AÑO */}
         <select
           value={anioFiltro}
           onChange={(e) => setAnioFiltro(e.target.value)}
@@ -68,6 +74,7 @@ export default function InspeccionesAguaFiltros({
           ))}
         </select>
 
+        {/* MES */}
         <select
           value={mesFiltro}
           onChange={(e) => setMesFiltro(e.target.value)}
@@ -80,11 +87,9 @@ export default function InspeccionesAguaFiltros({
           ))}
         </select>
 
+        {/* CREAR ÁREA */}
         <div className="relative">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 opacity-60"
-          />
+          <Plus size={16} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-60" />
           <input
             type="text"
             placeholder="Nueva área + Enter"
@@ -92,10 +97,8 @@ export default function InspeccionesAguaFiltros({
             onKeyDown={async (e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
-
                 const input = e.target as HTMLInputElement;
                 const valor = input.value.trim();
-
                 if (!valor) return;
 
                 try {
@@ -106,7 +109,14 @@ export default function InspeccionesAguaFiltros({
                   );
 
                   if (existe) {
-                    // Aquí podrías mostrar un mensaje de error
+                    Swal.fire({
+                      toast: true,
+                      position: "top-end",
+                      icon: "warning",
+                      title: "Esa área ya existe",
+                      timer: 1400,
+                      showConfirmButton: false,
+                    });
                     return;
                   }
 
@@ -116,17 +126,41 @@ export default function InspeccionesAguaFiltros({
                     body: JSON.stringify({ nombre: valor }),
                   });
 
-                  if (res.ok) {
-                    input.value = "";
-                    // Aquí podrías recargar las áreas
-                  }
+                  if (!res.ok) throw new Error("No se pudo crear el área");
+
+                  const nuevaArea = await res.json();
+                  setDataBackend((prev) => [...prev, nuevaArea]);
+
+                  Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    icon: "success",
+                    title: "Área creada",
+                    timer: 1200,
+                    showConfirmButton: false,
+                  });
+
+                  input.value = "";
                 } catch (error) {
-                  console.error("Error creando área:", error);
+                  console.error(error);
+                  Swal.fire({ icon: "error", title: "Error", text: "No se pudo crear el área" });
                 }
               }
             }}
           />
         </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <span className={`px-3 py-1 rounded-full text-xs ${estilos.chip}`}>
+          📊 {inspeccionesFiltradas.length} registros
+        </span>
+        <span className={`px-3 py-1 rounded-full text-xs ${estilos.chip}`}>
+          👤 {responsable || "Sin responsable"}
+        </span>
+        <span className={`px-3 py-1 rounded-full text-xs ${estilos.chip}`}>
+          📅 {fechaActual}
+        </span>
       </div>
     </div>
   );

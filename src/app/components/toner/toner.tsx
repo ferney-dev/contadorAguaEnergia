@@ -41,76 +41,53 @@ export default function TablaTonners({ modoNoche }: { modoNoche: boolean }) {
 
   return (
     <div className={`p-4 sm:p-6 rounded-3xl ${fondo}`}>
-      {/* HEADER PRINCIPAL */}
-      <div
-        className={`rounded-3xl p-5 sm:p-6 mb-6 ${card} bg-gradient-to-r ${modoNoche
-          ? "from-[#161616] to-[#101010]"
-          : "from-white to-gray-50"
-          }`}
-      >
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold flex items-center gap-3">
-              <div className="p-3 rounded-2xl bg-red-500/10 shadow-sm">
-                <Printer className="text-red-500" size={28} />
+      {/* TARJETAS + BOTÓN GESTIÓN DE ÁREAS */}
+      <div className="mb-6 space-y-5">
+        <TonnerContenedores
+          card={card}
+          totalRegistros={totalRegistros}
+          totalCantidad={totalCantidad}
+          totalAreasConUso={totalAreasConUso}
+        />
+
+        {/* CARD DE GESTIÓN DE ÁREAS */}
+        <div className={`rounded-3xl p-5 sm:p-6 ${card}`}>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-purple-500/10 text-purple-500">
+                <Layers size={22} />
               </div>
-              Gestión de Tonners
-            </h2>
-            <p className="mt-2 text-sm sm:text-base opacity-70">
-              Administra, registra, edita y controla el inventario de tonners de
-              forma moderna y rápida.
-            </p>
+              <div>
+                <h3 className="text-base font-bold">Gestión de áreas</h3>
+                <p className={`text-sm ${modoNoche ? "text-gray-400" : "text-gray-500"}`}>
+                  Crea, edita y elimina las áreas disponibles.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+              {/* Input crear nueva área */}
+              <div className={`flex items-center gap-2 rounded-2xl px-4 py-3 ${modoNoche ? "bg-[#1a1a1a] border border-white/10" : "bg-gray-50 border border-gray-200"}`}>
+                <Plus className="shrink-0 text-blue-500" size={16} />
+                <input
+                  value={nuevaArea}
+                  onChange={(e) => setNuevaArea(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") crearArea(); }}
+                  placeholder="Nueva área + Enter"
+                  className="w-44 bg-transparent text-sm outline-none"
+                />
+              </div>
+
+              {/* Botón editar áreas */}
+              <button
+                onClick={() => setMostrarModalAreas(true)}
+                className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-purple-600 to-purple-500 px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:scale-105 active:scale-95"
+              >
+                <Layers size={16} />
+                Editar áreas
+              </button>
+            </div>
           </div>
-
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => setMostrarModalAreas(true)}
-              className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-md hover:scale-105 transition"
-            >
-              <Layers size={18} />
-              Editar áreas
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* TARJETAS */}
-      <TonnerContenedores
-        card={card}
-        totalRegistros={totalRegistros}
-        totalCantidad={totalCantidad}
-        totalAreasConUso={totalAreasConUso}
-      />
-
-      {/* GESTIÓN DE ÁREAS */}
-      <div className={`p-5 sm:p-6 mb-6 rounded-3xl ${card}`}>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
-          <div>
-            <h3 className="font-bold text-xl flex items-center gap-2">
-              <Layers className="text-blue-500" />
-              Gestión de áreas
-            </h3>
-            <p className="text-sm opacity-70 mt-1">
-              Crea nuevas áreas y administra las existentes.
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3">
-          <input
-            value={nuevaArea}
-            onChange={(e) => setNuevaArea(e.target.value)}
-            placeholder="Escribe el nombre del área"
-            className={`w-full p-4 rounded-2xl text-base outline-none transition ${input} focus:ring-2 focus:ring-blue-500`}
-          />
-
-          <button
-            onClick={crearArea}
-            className="flex items-center justify-center gap-2 px-5 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold shadow-md hover:scale-105 active:scale-95 transition"
-          >
-            <Plus size={18} />
-            Crear área
-          </button>
         </div>
       </div>
 
@@ -290,6 +267,7 @@ export default function TablaTonners({ modoNoche }: { modoNoche: boolean }) {
         onClose={() => setMostrarModalAreas(false)}
         areas={areas}
         cargar={() => {}}
+        modoNoche={modoNoche}
       />
     </div>
   );

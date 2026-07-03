@@ -482,18 +482,10 @@ export default function ReciclajeTabla({
                     let totalC = 0;
                     let totalNC = 0;
 
-                    // Sumar valores de registros guardados
+                    // Solo sumar valores de este grupo específico (registros actuales)
                     registros.forEach((r) => {
                       totalC += Number(r[`${c.db}_c`] || 0);
                       totalNC += Number(r[`${c.db}_nc`] || 0);
-                    });
-
-                    // Sumar valores locales
-                    Object.values(valores).forEach((campoValores) => {
-                      if (campoValores[c.key]) {
-                        totalC += Number(campoValores[c.key].c || 0);
-                        totalNC += Number(campoValores[c.key].nc || 0);
-                      }
                     });
 
                     return (
@@ -545,11 +537,6 @@ export default function ReciclajeTabla({
                             total += Number(r.reciclables_c || 0) + Number(r.ordinarios_c || 0) +
                             Number(r.peligrosos_c || 0) + Number(r.presintos_c || 0);
                           });
-                          Object.values(valores).forEach((campoValores) => {
-                            Object.values(campoValores).forEach((val) => {
-                              total += Number(val.c || 0);
-                            });
-                          });
                           return total;
                         })()}
                       </span>
@@ -564,11 +551,6 @@ export default function ReciclajeTabla({
                             total += Number(r.reciclables_nc || 0) + Number(r.ordinarios_nc || 0) +
                             Number(r.peligrosos_nc || 0) + Number(r.presintos_nc || 0);
                           });
-                          Object.values(valores).forEach((campoValores) => {
-                            Object.values(campoValores).forEach((val) => {
-                              total += Number(val.nc || 0);
-                            });
-                          });
                           return total;
                         })()}
                       </span>
@@ -578,16 +560,15 @@ export default function ReciclajeTabla({
                         modoNoche ? "bg-blue-900/40 text-blue-300" : "bg-blue-200 text-blue-800"
                       }`}>
                         {(() => {
-                          let total = 0;
+                          let totalC = 0;
+                          let totalNC = 0;
                           registros.forEach((r) => {
-                            total += Number(r.total || 0);
+                            totalC += Number(r.reciclables_c || 0) + Number(r.ordinarios_c || 0) +
+                            Number(r.peligrosos_c || 0) + Number(r.presintos_c || 0);
+                            totalNC += Number(r.reciclables_nc || 0) + Number(r.ordinarios_nc || 0) +
+                            Number(r.peligrosos_nc || 0) + Number(r.presintos_nc || 0);
                           });
-                          Object.values(valores).forEach((campoValores) => {
-                            Object.values(campoValores).forEach((val) => {
-                              total += Number(val.c || 0) + Number(val.nc || 0);
-                            });
-                          });
-                          return total;
+                          return totalC + totalNC;
                         })()}
                       </span>
                     </td>

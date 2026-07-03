@@ -271,7 +271,7 @@ export default function MenuPrincipal() {
 
   return (
 
-    <div className={`w-full flex flex-col ${colores.contenido}`}>
+    <div className={`w-full flex flex-col h-screen overflow-hidden ${colores.contenido}`}>
 
       {/* HEADER */}
 
@@ -317,14 +317,15 @@ export default function MenuPrincipal() {
 
       {/* CONTENEDOR */}
 
-      <div className="flex w-full h-full relative">
+      <div className="flex w-full flex-1 overflow-hidden relative">
 
         {/* SIDEBAR */}
 
         <aside
           className={`
-            absolute md:static top-0 left-0 min-h-full z-40
+            absolute md:static top-0 left-0 h-full z-40
             transition-all duration-300 pt-20 md:pt-10
+            overflow-y-auto
             ${colores.sidebar}
             ${
               esMovil
@@ -381,7 +382,7 @@ export default function MenuPrincipal() {
 
         {/* CONTENIDO */}
 
-        <main className={`flex-1 p-5 md:p-10 ${colores.contenido}`}>
+        <main className={`flex-1 overflow-y-auto p-5 md:p-10 ${colores.contenido}`}>
 
           {vistaActual === "inicio" && <DashboardInicio modoNoche={modoNoche} />}
 

@@ -19,68 +19,64 @@ export default function ResmasContenedores({
   totalMesActual,
   nombreMesActual,
 }: Props) {
+  const items = [
+    {
+      label: "Áreas visibles",
+      value: resumen.totalAreas,
+      icon: Building2,
+      color: "text-blue-500",
+      bg: "bg-blue-500/12",
+      glow: "bg-blue-500/10",
+      border: "border-blue-500/20",
+    },
+    {
+      label: `Total mes actual (${nombreMesActual})`,
+      value: totalMesActual,
+      icon: Files,
+      color: "text-emerald-500",
+      bg: "bg-emerald-500/12",
+      glow: "bg-emerald-500/10",
+      border: "border-emerald-500/20",
+    },
+    {
+      label: "Total general",
+      value: resumen.totalCantidad,
+      icon: BarChart3,
+      color: "text-violet-500",
+      bg: "bg-violet-500/12",
+      glow: "bg-violet-500/10",
+      border: "border-violet-500/20",
+    },
+  ];
+
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-      {/* ÁREAS */}
-      <div className={`relative overflow-hidden rounded-3xl p-5 ${card}`}>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide opacity-70">
-              Áreas visibles
-            </p>
-            <p className="mt-2 text-3xl font-extrabold text-blue-500">
-              {resumen.totalAreas}
-            </p>
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+      {items.map((item) => {
+        const Icon = item.icon;
+        return (
+          <div
+            key={item.label}
+            className={`relative overflow-hidden rounded-[20px] border p-6 ${card} ${item.border}`}
+          >
+            {/* fondo decorativo */}
+            <div className={`absolute -right-8 -top-8 h-28 w-28 rounded-full blur-3xl ${item.glow}`} />
+
+            <div className="relative flex items-start justify-between gap-4">
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-widest opacity-60">
+                  {item.label}
+                </p>
+                <p className={`text-4xl font-extrabold leading-none ${item.color}`}>
+                  {item.value}
+                </p>
+              </div>
+              <div className={`shrink-0 rounded-2xl p-3.5 ${item.bg}`}>
+                <Icon className={item.color} size={24} />
+              </div>
+            </div>
           </div>
-
-          <div className="rounded-2xl bg-blue-500/15 p-3">
-            <Building2 className="text-blue-500" size={22} />
-          </div>
-        </div>
-
-        <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-blue-500/10 blur-2xl" />
-      </div>
-
-      {/* REGISTROS */}
-      <div className={`relative overflow-hidden rounded-3xl p-5 ${card}`}>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide opacity-70">
-              Total mes actual ({nombreMesActual})
-            </p>
-
-            <p className="mt-2 text-3xl font-extrabold text-emerald-500">
-              {totalMesActual}
-            </p>
-          </div>
-
-          <div className="rounded-2xl bg-emerald-500/15 p-3">
-            <Files className="text-emerald-500" size={22} />
-          </div>
-        </div>
-
-        <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-emerald-500/10 blur-2xl" />
-      </div>
-
-      {/* TOTAL */}
-      <div className={`relative overflow-hidden rounded-3xl p-5 ${card}`}>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide opacity-70">
-              Total general
-            </p>
-            <p className="mt-2 text-3xl font-extrabold text-violet-500">
-              {resumen.totalCantidad}
-            </p>
-          </div>
-
-          <div className="rounded-2xl bg-violet-500/15 p-3">
-            <BarChart3 className="text-violet-500" size={22} />
-          </div>
-        </div>
-
-        <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-violet-500/10 blur-2xl" />
-      </div>
+        );
+      })}
     </div>
   );
 }

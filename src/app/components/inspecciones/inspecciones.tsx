@@ -38,6 +38,27 @@ export default function Inspecciones({ modoNoche }: Props) {
       : "bg-white border border-gray-200"
   };
 
+  useEffect(() => {
+    const cargar = async () => {
+      try {
+        const [resR, resA, resE] = await Promise.all([
+          fetch("/api/areas"),
+          fetch("/api/areas-sanitarias"),
+          fetch("/api/areas-energia"),
+        ]);
+        const [reciclaje, agua, energia] = await Promise.all([
+          resR.json(), resA.json(), resE.json()
+        ]);
+        setDataReciclaje(Array.isArray(reciclaje) ? reciclaje : []);
+        setDataAgua(Array.isArray(agua) ? agua : []);
+        setDataEnergia(Array.isArray(energia) ? energia : []);
+      } catch (e) {
+        console.error("Error cargando áreas:", e);
+      }
+    };
+    cargar();
+  }, []);
+
   return (
     <div className={`w-full min-h-screen p-4 md:p-6 ${estilos.fondo}`}>
 

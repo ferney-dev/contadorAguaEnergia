@@ -22,8 +22,8 @@ export default function TablaSanitarios({
     observaciones,
     fechaActual,
     busqueda,
-    modoNuevaInspeccion,
     inspecciones,
+    setInspecciones,
     responsable,
     fechaSesion,
     mostrarModal,
@@ -34,11 +34,8 @@ export default function TablaSanitarios({
     CAMPOS,
     MESES,
     aniosDisponibles,
-    dataBackendFiltrada,
     inspeccionesFiltradas,
     setBusqueda,
-    setResponsable,
-    setFechaSesion,
     setMostrarModal,
     setEditandoGrupo,
     setAnioFiltro,
@@ -46,29 +43,18 @@ export default function TablaSanitarios({
     finalizarInspeccion,
     handleChange,
     handleObs,
-    obtenerValor,
-    calcularTotalFila,
-    guardarFila,
+    handleBlur,
     guardarTodo,
     eliminarInspeccionGrupo,
   } = useInspeccionesAgua(modoNoche);
 
-  const tablaProps = {
+  const contenedoresProps = {
     modoNoche,
-    dataBackendFiltrada,
-    valores,
-    observaciones,
-    responsable,
-    fechaSesion,
-    inspecciones,
     estilos,
-    handleChange,
-    handleObs,
-    obtenerValor,
-    calcularTotalFila,
-    guardarFila,
-    dataBackend,
-    setDataBackend,
+    fechaActual,
+    inspecciones,
+    setMostrarModal,
+    finalizarInspeccion,
   };
 
   const filtrosProps = {
@@ -83,45 +69,68 @@ export default function TablaSanitarios({
     aniosDisponibles,
     MESES,
     dataBackend,
+    inspeccionesFiltradas,
+    fechaActual,
+    responsable,
+    setDataBackend,
   };
 
-  const contenedoresProps = {
+  const tablaProps = {
     modoNoche,
+    dataBackend,
+    setDataBackend,
+    inspeccionesFiltradas,
+    valores,
+    observaciones,
+    fechaSesion,
+    editandoGrupo,
+    setEditandoGrupo,
+    handleChange,
+    handleObs,
+    handleBlur,
+    guardarTodo,
+    eliminarInspeccionGrupo,
     estilos,
-    fechaActual,
     inspecciones,
-    setMostrarModal,
-    finalizarInspeccion,
   };
 
   return (
     <div className={`w-full rounded-3xl p-3 sm:p-4 md:p-6 ${estilos.tarjeta}`}>
       <div className="mb-5 flex flex-col gap-4">
         <div className="text-center">
-          <h2
-            className={`text-lg sm:text-xl md:text-2xl font-bold tracking-wide ${estilos.titulo}`}
-          >
+          <h2 className={`text-lg sm:text-xl md:text-2xl font-bold tracking-wide ${estilos.titulo}`}>
             Gestión de Sanitarios
           </h2>
           <p className={`mt-1 text-xs sm:text-sm ${estilos.subtitulo}`}>
-            Control de inspecciones, filtros e historial en tiempo real
+            Control de inspecciones, filtros e historial. Los datos se guardan automáticamente al salir de la celda.
           </p>
-
           <InspeccionesAguaContenedores {...contenedoresProps} />
         </div>
-
         <InspeccionesAguaFiltros {...filtrosProps} />
-
-        <InspeccionesAguaTabla {...tablaProps} />
       </div>
 
       <MovilAgua
         dataBackend={dataBackend}
-        setInspecciones={() => {}}
+        setInspecciones={setInspecciones}
         mostrarModal={mostrarModal}
         setMostrarModal={setMostrarModal}
         modoNoche={modoNoche}
       />
+
+      <InspeccionesAguaTabla {...tablaProps} />
+
+      {/* FOOTER */}
+      <div className="mt-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className={`px-4 py-2 rounded-xl text-xs sm:text-sm ${estilos.chip}`}>
+          Día actual: <span className="font-semibold">{fechaActual}</span>
+        </div>
+        <div className={`px-4 py-2 rounded-xl text-xs sm:text-sm ${estilos.chip}`}>
+          Responsable:{" "}
+          <span className="font-semibold">
+            {responsable ? responsable : "Pendiente por asignar"}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

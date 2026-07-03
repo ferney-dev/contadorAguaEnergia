@@ -58,7 +58,7 @@ export default function ReciclajeContenedores({
 
   return (
     <>
-      <div className="grid grid-cols-3 gap-3 mt-3 max-w-xl mx-auto">
+      <div className="grid grid-cols-3 gap-4 mt-6 mb-6 max-w-xl mx-auto">
         {cards.map((c, i) => {
           const Icono = c.icono;
           return (
@@ -82,7 +82,7 @@ export default function ReciclajeContenedores({
         })}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
         <div className={`rounded-2xl px-4 py-3 flex items-center gap-3 ${estilos.inputSuave}`}>
           <CalendarDays size={18} />
           <div className="flex flex-col">

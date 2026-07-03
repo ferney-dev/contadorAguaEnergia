@@ -262,6 +262,83 @@ export default function TablaEnergia({ modoNoche = false, dataBackend: dataInici
     setObservaciones((prev) => ({ ...prev, [filaKey]: value }));
   };
 
+  const handleBlur = async (
+    filaKey: string,
+    campo: number,
+    tipo: "c" | "nc",
+    value: string,
+    areaId: number,
+    responsableGrupo: string,
+    fecha: string
+  ) => {
+    const limpio = value.replace(/\D/g, "");
+    const valor = Number(limpio || 0);
+
+    try {
+      const registro = inspecciones.find(
+        (r) =>
+          r.area_id === areaId &&
+          r.responsable === responsableGrupo &&
+          normalizarFecha(r.fecha) === fecha
+      );
+
+      const campoDef = CAMPOS.find((c) => c.key === campo);
+      if (!campoDef) return;
+      const campoKey = `${campoDef.db}_${tipo}`;
+
+      const allValues: Record<string, number> = {
+        bombillas_c: Number(registro?.bombillas_c || 0),
+        bombillas_nc: Number(registro?.bombillas_nc || 0),
+        reflectores_c: Number(registro?.reflectores_c || 0),
+        reflectores_nc: Number(registro?.reflectores_nc || 0),
+        lamparas_c: Number(registro?.lamparas_c || 0),
+        lamparas_nc: Number(registro?.lamparas_nc || 0),
+        aires_c: Number(registro?.aires_c || 0),
+        aires_nc: Number(registro?.aires_nc || 0),
+      };
+      allValues[campoKey] = valor;
+
+      const total = Object.values(allValues).reduce((acc, v) => acc + v, 0);
+
+      if (total > 0) {
+        await fetch("/api/inspecciones-energia", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: registro?.id || null,
+            fecha,
+            responsable: responsableGrupo,
+            area_id: areaId,
+            ...allValues,
+          }),
+        });
+
+        const res = await fetch("/api/inspecciones-energia");
+        const data = await res.json();
+        setInspecciones(Array.isArray(data) ? data : data?.data || []);
+
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "success",
+          title: "Dato guardado",
+          timer: 1200,
+          showConfirmButton: false,
+        });
+      }
+    } catch (error) {
+      console.error("Error en handleBlur energía:", error);
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "Error al guardar",
+        timer: 1200,
+        showConfirmButton: false,
+      });
+    }
+  };
+
   const obtenerValor = (filaKey: string, campo: number, tipo: "c" | "nc", registro: any) => {
     const valorLocal = valores?.[filaKey]?.[campo]?.[tipo];
     if (valorLocal !== undefined && valorLocal !== "") return Number(valorLocal);
@@ -314,8 +391,9 @@ export default function TablaEnergia({ modoNoche = false, dataBackend: dataInici
         limpiarEstadoFila(filaKey);
         Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Registro eliminado", timer: 1200, showConfirmButton: false });
       } else if (total > 0) {
+        const method = registroSeguro?.id ? "PUT" : "POST";
         const response = await fetch("/api/inspecciones-energia", {
-          method: "POST",
+          method,
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
@@ -419,7 +497,7 @@ export default function TablaEnergia({ modoNoche = false, dataBackend: dataInici
   const tablaProps = {
     modoNoche, dataBackendFiltrada, dataBackend, setDataBackend,
     inspeccionesFiltradas, valores, observaciones, fechaSesion,
-    editandoGrupo, setEditandoGrupo, handleChange, handleObs,
+    editandoGrupo, setEditandoGrupo, handleChange, handleObs, handleBlur,
     calcularTotalFila, guardarFila, guardarTodo, eliminarInspeccionGrupo, estilos,
   };
 

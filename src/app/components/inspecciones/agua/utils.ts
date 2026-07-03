@@ -1,3 +1,8 @@
+export const normalizarFecha = (fecha: string) => {
+  if (!fecha) return "";
+  return fecha.split("T")[0];
+};
+
 export const obtenerInicioSemana = (fecha: string) => {
   if (!fecha) return "";
   const base = fecha.split("T")[0];

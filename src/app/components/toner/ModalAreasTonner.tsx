@@ -9,258 +9,170 @@ interface Area {
   nombre: string;
 }
 
-export default function ModalAreasTonner({
-  abierto,
-  onClose,
-  areas,
-  cargar
-}: {
+interface Props {
   abierto: boolean;
   onClose: () => void;
   areas: Area[];
   cargar: () => void;
-}) {
+  modoNoche?: boolean;
+}
 
-  const [editandoId, setEditandoId] = useState<number | null>(null);
-  const [nuevoNombre, setNuevoNombre] = useState("");
+export default function ModalAreasTonner({ abierto, onClose, areas, cargar, modoNoche = false }: Props) {
+  const [editandoId,   setEditandoId]   = useState<number | null>(null);
+  const [nuevoNombre,  setNuevoNombre]  = useState("");
 
   if (!abierto) return null;
 
-  /* =========================
-     ❌ ELIMINAR
-  ========================= */
-  const eliminar = async (id: number) => {
+  // ── tokens de tema ──────────────────────────────────────────────────────────
+  const shell    = modoNoche ? "bg-[#161616] border border-white/8"  : "bg-white border border-gray-100";
+  const itemBg   = modoNoche ? "bg-[#1f1f1f] border-white/10"        : "bg-gray-50 border-gray-100";
+  const itemText = modoNoche ? "text-gray-200"                        : "text-gray-800";
+  const inputCls = modoNoche ? "bg-[#252525] border-white/10 text-white placeholder-gray-600" : "bg-white border-gray-200 text-gray-800";
+  const footerBg = modoNoche ? "bg-[#111] border-white/8"            : "bg-gray-50 border-gray-100";
+  const countCls = modoNoche ? "text-gray-500"                        : "text-gray-400";
+  const closeBtnCls = modoNoche
+    ? "bg-[#252525] border-white/10 text-gray-400 hover:bg-[#2e2e2e]"
+    : "bg-white border-gray-200 text-gray-600 hover:bg-gray-100";
+  const emptyText = modoNoche ? "text-gray-600" : "text-gray-400";
 
+  /* ── ELIMINAR ───────────────────────────────────────────────────────────── */
+  const eliminar = async (id: number) => {
     const confirmacion = await Swal.fire({
       title: "¿Eliminar área?",
       text: "No se puede deshacer",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#dc2626",
+      confirmButtonColor: "#C40000",
       cancelButtonColor: "#6b7280",
       confirmButtonText: "Eliminar",
       cancelButtonText: "Cancelar",
-      reverseButtons: true
+      reverseButtons: true,
     });
-
     if (!confirmacion.isConfirmed) return;
-
     try {
-      const res = await fetch(`/api/areas-tonners?id=${id}`, {
-        method: "DELETE"
-      });
-
+      const res = await fetch(`/api/areas-tonners?id=${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
-
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "success",
-        title: "Área eliminada",
-        showConfirmButton: false,
-        timer: 2000
-      });
-
+      Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Área eliminada", showConfirmButton: false, timer: 2000 });
       cargar();
-
     } catch {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "Error eliminando",
-        showConfirmButton: false,
-        timer: 2500
-      });
+      Swal.fire({ toast: true, position: "top-end", icon: "error", title: "Error eliminando", showConfirmButton: false, timer: 2500 });
     }
   };
 
-  /* =========================
-     ✏️ EDITAR
-  ========================= */
+  /* ── EDITAR ─────────────────────────────────────────────────────────────── */
   const editar = async (id: number) => {
     if (!nuevoNombre.trim()) return;
-
     try {
       const res = await fetch("/api/areas-tonners", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          id,
-          nombre: nuevoNombre
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, nombre: nuevoNombre }),
       });
-
       if (!res.ok) throw new Error();
-
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "success",
-        title: "Área actualizada",
-        showConfirmButton: false,
-        timer: 2000
-      });
-
+      Swal.fire({ toast: true, position: "top-end", icon: "success", title: "Área actualizada", showConfirmButton: false, timer: 2000 });
       setEditandoId(null);
       setNuevoNombre("");
       cargar();
-
     } catch {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "Error actualizando",
-        showConfirmButton: false,
-        timer: 2500
-      });
+      Swal.fire({ toast: true, position: "top-end", icon: "error", title: "Error actualizando", showConfirmButton: false, timer: 2500 });
     }
   };
 
   return (
- <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
- 
-  <div
-        className="
-          relative
-          z-10
-          w-full
-          md:w-[1200px]
-          max-h-[92vh]
-          overflow-hidden
-          rounded-[34px]
-          bg-[#f8f8f8]
-          shadow-[0_25px_80px_rgba(0,0,0,0.45)]
-          border
-          border-red-950/20
-          flex
-          flex-col
-        "
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/55 backdrop-blur-sm sm:p-4"
+      onClick={onClose}
+    >
+      <div
+        className={`relative w-full sm:w-[440px] md:w-[520px] rounded-t-[28px] sm:rounded-[28px] flex flex-col overflow-hidden shadow-2xl ${shell}`}
+        style={{ maxHeight: "88vh" }}
+        onClick={(e) => e.stopPropagation()}
       >
-
-      {/* 🔴 HEADER */}
-      <div className="bg-gradient-to-r from-red-700 to-red-500 text-white px-4 sm:px-5 py-3 flex justify-between items-center">
-
-        <div className="flex items-center gap-2 sm:gap-3">
-
-          <img
-            src="/img/logo.png"
-            alt="logo"
-            className="w-8 h-8 sm:w-10 sm:h-10 object-contain  p-1"
-          />
-
-          <h2 className="font-bold text-sm sm:text-lg">
-            Gestión de Áreas
-          </h2>
-
+        {/* ── HEADER ─────────────────────────────────────────── */}
+        <div className="bg-[#C40000] px-5 py-4 flex items-center gap-3 shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+            <img src="/img/logo.png" className="w-5 h-5 object-contain" alt="logo" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-white text-sm leading-snug">Gestión de Áreas</p>
+            <p className="text-white/60 text-xs mt-0.5">Edita y elimina áreas registradas</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-7 h-7 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition shrink-0"
+          >
+            <X size={14} />
+          </button>
         </div>
 
-        <button
-          onClick={onClose}
-          className="p-2 rounded-lg hover:bg-white/20 transition"
-        >
-          <X size={18} />
-        </button>
-      </div>
-
-      {/* 📋 LISTA */}
-      <div className="max-h-[60vh] overflow-y-auto p-3 sm:p-4 space-y-2 sm:space-y-3">
-
-        {areas.length === 0 && (
-          <p className="text-center text-sm opacity-60">
-            No hay áreas registradas
-          </p>
-        )}
-
-        {areas.map((a) => (
-          <div
-            key={a.id}
-            className="flex items-center justify-between gap-2 p-3 rounded-xl border border-gray-200 dark:border-white/10 hover:shadow-md transition"
-          >
-
-            {/* INPUT / TEXTO */}
-            {editandoId === a.id ? (
-              <input
-                autoFocus
-                value={nuevoNombre}
-                onChange={(e) => setNuevoNombre(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") editar(a.id);
-                }}
-                className="flex-1 p-2 rounded-lg border outline-none text-sm"
-              />
-            ) : (
-              <span className="font-medium text-sm sm:text-base truncate">
-                {a.nombre}
-              </span>
-            )}
-
-            {/* BOTONES */}
-            <div className="flex gap-1 sm:gap-2">
-
-              {editandoId === a.id ? (
-                <button
-                  onClick={() => editar(a.id)}
-                  className="p-2 rounded-lg bg-green-500 text-white hover:scale-105 transition"
-                >
-                  <Check size={14} />
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    setEditandoId(a.id);
-                    setNuevoNombre(a.nombre);
-                  }}
-                  className="p-2 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white transition"
-                >
-                  <Pencil size={14} />
-                </button>
-              )}
-
-              <button
-                onClick={() => eliminar(a.id)}
-                className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition"
+        {/* ── LISTA ──────────────────────────────────────────── */}
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2.5" style={{ scrollbarWidth: "none" }}>
+          {areas.length === 0 ? (
+            <p className={`text-center text-sm py-8 ${emptyText}`}>No hay áreas registradas</p>
+          ) : (
+            areas.map((a) => (
+              <div
+                key={a.id}
+                className={`flex items-center justify-between gap-3 px-3.5 py-3 rounded-2xl border transition hover:shadow-sm ${itemBg}`}
               >
-                <Trash2 size={14} />
-              </button>
+                {/* INPUT o TEXTO */}
+                {editandoId === a.id ? (
+                  <input
+                    autoFocus
+                    value={nuevoNombre}
+                    onChange={(e) => setNuevoNombre(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") editar(a.id); if (e.key === "Escape") { setEditandoId(null); setNuevoNombre(""); } }}
+                    className={`flex-1 px-3 py-1.5 rounded-xl border text-sm outline-none transition ${inputCls}`}
+                  />
+                ) : (
+                  <span className={`flex-1 text-sm font-medium truncate ${itemText}`}>{a.nombre}</span>
+                )}
 
-            </div>
-          </div>
-        ))}
+                {/* BOTONES */}
+                <div className="flex gap-1.5 shrink-0">
+                  {editandoId === a.id ? (
+                    <button
+                      onClick={() => editar(a.id)}
+                      className="w-7 h-7 rounded-xl bg-green-500 text-white flex items-center justify-center hover:bg-green-600 transition"
+                      title="Confirmar"
+                    >
+                      <Check size={13} />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => { setEditandoId(a.id); setNuevoNombre(a.nombre); }}
+                      className="w-7 h-7 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition"
+                      title="Editar"
+                    >
+                      <Pencil size={13} />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => eliminar(a.id)}
+                    className="w-7 h-7 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-[#C40000] hover:text-white transition"
+                    title="Eliminar"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
 
+        {/* ── FOOTER ─────────────────────────────────────────── */}
+        <div className={`px-4 py-3.5 border-t flex items-center justify-between shrink-0 ${footerBg}`}>
+          <span className={`text-xs font-medium ${countCls}`}>
+            {areas.length} {areas.length === 1 ? "área" : "áreas"} registradas
+          </span>
+          <button
+            onClick={onClose}
+            className={`px-4 py-2 rounded-2xl border text-sm font-medium transition ${closeBtnCls}`}
+          >
+            Cerrar
+          </button>
+        </div>
       </div>
-
-      {/* 🔥 FOOTER BONITO */}
-      <div className="
-        px-4 sm:px-5 py-3 
-        bg-gray-100 dark:bg-[#1a1a1a] 
-        border-t border-gray-200 dark:border-white/10 
-        flex justify-between items-center
-      ">
-
-        <span className="text-xs sm:text-sm text-gray-500">
-          Total: {areas.length} áreas
-        </span>
-
-        <button
-          onClick={onClose}
-          className="
-            px-4 py-2 
-            rounded-xl 
-            bg-gray-300 dark:bg-white/10 
-            hover:bg-gray-400 dark:hover:bg-white/20 
-            transition text-sm font-medium
-          "
-        >
-          Cerrar
-        </button>
-
-      </div>
-
     </div>
-  </div>
-);
+  );
 }

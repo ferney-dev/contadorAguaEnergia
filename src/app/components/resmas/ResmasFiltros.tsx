@@ -17,7 +17,6 @@ interface Props {
 
 export default function ResmasFiltros({
   modoNoche,
-  card,
   busqueda,
   setBusqueda,
   anioSeleccionado,
@@ -27,28 +26,37 @@ export default function ResmasFiltros({
   setNuevaArea,
   crearArea,
 }: Props) {
-  const tarjetaSuave = modoNoche
-    ? "bg-[#161616] border border-white/10"
-    : "bg-white border border-gray-200";
+  const inputBase = modoNoche
+    ? "bg-[#1a1a1a] border border-white/10 text-white placeholder:text-gray-500"
+    : "bg-gray-50 border border-gray-200 text-gray-800 placeholder:text-gray-400";
 
   return (
     <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
+
+      {/* Buscar */}
       <div className="lg:col-span-4">
-        <div className={`flex items-center gap-3 rounded-3xl px-4 py-3 ${tarjetaSuave}`}>
-          <Search className="text-blue-500" size={18} />
+        <label className={`mb-1.5 block text-xs font-semibold uppercase tracking-wider ${modoNoche ? "text-gray-400" : "text-gray-500"}`}>
+          Buscar área
+        </label>
+        <div className={`flex items-center gap-3 rounded-2xl px-4 py-3 ${inputBase}`}>
+          <Search className="shrink-0 text-blue-500" size={16} />
           <input
             type="text"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            placeholder="Buscar área..."
+            placeholder="Nombre del área..."
             className="w-full bg-transparent text-sm outline-none"
           />
         </div>
       </div>
 
+      {/* Año */}
       <div className="lg:col-span-3">
-        <div className={`flex items-center gap-3 rounded-3xl px-4 py-3 ${tarjetaSuave}`}>
-          <CalendarRange className="text-emerald-500" size={18} />
+        <label className={`mb-1.5 block text-xs font-semibold uppercase tracking-wider ${modoNoche ? "text-gray-400" : "text-gray-500"}`}>
+          Año
+        </label>
+        <div className={`flex items-center gap-3 rounded-2xl px-4 py-3 ${inputBase}`}>
+          <CalendarRange className="shrink-0 text-emerald-500" size={16} />
           <select
             value={anioSeleccionado}
             onChange={(e) => setAnioSeleccionado(Number(e.target.value))}
@@ -56,28 +64,31 @@ export default function ResmasFiltros({
           >
             {aniosDisponibles.map((anio) => (
               <option key={anio} value={anio} className="text-slate-900">
-                Año {anio}
+                {anio}
               </option>
             ))}
           </select>
         </div>
       </div>
 
+      {/* Nueva área */}
       <div className="lg:col-span-5">
-        <div className={`flex items-center gap-3 rounded-3xl px-4 py-3 ${tarjetaSuave}`}>
-          <Plus className="text-violet-500" size={18} />
+        <label className={`mb-1.5 block text-xs font-semibold uppercase tracking-wider ${modoNoche ? "text-gray-400" : "text-gray-500"}`}>
+          Nueva área
+        </label>
+        <div className={`flex items-center gap-3 rounded-2xl px-4 py-3 ${inputBase}`}>
+          <Plus className="shrink-0 text-violet-500" size={16} />
           <input
             type="text"
             value={nuevaArea}
             onChange={(e) => setNuevaArea(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") crearArea();
-            }}
-            placeholder="Crear área y guardar con Enter..."
+            onKeyDown={(e) => { if (e.key === "Enter") crearArea(); }}
+            placeholder="Escribir nombre y presionar Enter..."
             className="w-full bg-transparent text-sm outline-none"
           />
         </div>
       </div>
+
     </div>
   );
 }
