@@ -55,7 +55,7 @@ export default function ComparativoAgua({ modoNoche }: Props) {
   const [mostrarModalSedes, setMostrarModalSedes] = useState(false);
   const [vistaTabla,        setVistaTabla]        = useState(false);
 
-  const bg   = modoNoche ? "bg-[#111]"                              : "bg-[#f4f6fa]";
+  const bg   = modoNoche ? "bg-[#111]"                              : "bg-[#ffffff]";
   const txt  = modoNoche ? "text-white"                             : "text-gray-800";
   const sub  = modoNoche ? "text-gray-400"                          : "text-gray-500";
   const inp  = modoNoche ? "bg-[#222] border-[#3a3a3a] text-white"  : "bg-white border-gray-300 text-gray-800";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Layers, CalendarDays, Filter } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { MESES } from "./constants";
 
 interface Props {
@@ -8,106 +8,115 @@ interface Props {
   card: string;
   subCard: string;
   busqueda: string;
-  setBusqueda: (value: string) => void;
+  setBusqueda: (v: string) => void;
   filtroArea: string;
-  setFiltroArea: (value: string) => void;
+  setFiltroArea: (v: string) => void;
   filtroAnio: string;
-  setFiltroAnio: (value: string) => void;
+  setFiltroAnio: (v: string) => void;
   filtroMes: string;
-  setFiltroMes: (value: string) => void;
+  setFiltroMes: (v: string) => void;
   areas: { id: number; nombre: string }[];
+  totalFiltrados: number;
 }
 
 export default function TonnerFiltros({
   modoNoche,
-  card,
-  subCard,
-  busqueda,
-  setBusqueda,
-  filtroArea,
-  setFiltroArea,
-  filtroAnio,
-  setFiltroAnio,
-  filtroMes,
-  setFiltroMes,
+  busqueda, setBusqueda,
+  filtroArea, setFiltroArea,
+  filtroAnio, setFiltroAnio,
+  filtroMes, setFiltroMes,
   areas,
+  totalFiltrados,
 }: Props) {
-  return (
-    <div className={`p-5 sm:p-6 mb-6 rounded-3xl ${card}`}>
-      <div className="flex items-center gap-3 mb-5">
-        <div className="p-3 rounded-2xl bg-red-500/10">
-          <Filter className="text-red-500" size={22} />
-        </div>
-        <div>
-          <h3 className="font-bold text-xl">Filtros avanzados</h3>
-          <p className="text-sm opacity-70">
-            Filtra por búsqueda, área, año y mes (formato BD).
-          </p>
-        </div>
-      </div>
+  const inp = modoNoche
+    ? "bg-[#1e1e1e] border-white/10 text-white placeholder-gray-500"
+    : "bg-gray-50 border-gray-200 text-gray-800 placeholder-gray-400";
+  const chip = modoNoche
+    ? "bg-[#252525] text-gray-300 border-[#333]"
+    : "bg-gray-100 text-gray-600 border-gray-200";
+  const sub = modoNoche ? "text-gray-400" : "text-gray-500";
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        {/* BUSCADOR */}
-        <div className={`flex items-center gap-3 p-4 rounded-2xl ${subCard}`}>
-          <Search className="text-blue-500" size={20} />
+  const hayFiltros = busqueda || filtroArea || filtroAnio || filtroMes;
+
+  return (
+    <div className={`rounded-2xl border p-4 space-y-3 ${modoNoche ? "bg-[#161616] border-white/8" : "bg-white border-gray-100 shadow-sm"}`}>
+
+      {/* fila 1: búsqueda + selects */}
+      <div className="flex flex-wrap gap-3">
+        {/* buscador */}
+        <div className={`flex-1 min-w-[200px] flex items-center gap-2 px-3 py-2.5 rounded-2xl border ${inp}`}>
+          <Search className="w-4 h-4 opacity-40 shrink-0" />
           <input
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            placeholder="Buscar..."
-            className="w-full bg-transparent outline-none"
+            placeholder="Buscar impresora, responsable, área..."
+            className="flex-1 bg-transparent outline-none text-sm"
           />
+          {busqueda && (
+            <button onClick={() => setBusqueda("")} className="opacity-40 hover:opacity-100 transition shrink-0">
+              <X size={14} />
+            </button>
+          )}
         </div>
 
-        {/* ÁREA */}
-        <div className={`flex items-center gap-3 p-4 rounded-2xl ${subCard}`}>
-          <Layers className="text-red-500" size={20} />
-          <select
-            value={filtroArea}
-            onChange={(e) => setFiltroArea(e.target.value)}
-            className="w-full bg-transparent outline-none"
-          >
-            <option value="">Todas</option>
-            {areas.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* área */}
+        <select
+          value={filtroArea}
+          onChange={(e) => setFiltroArea(e.target.value)}
+          className={`rounded-2xl px-3 py-2.5 text-sm border outline-none ${inp}`}
+        >
+          <option value="">Todas las áreas</option>
+          {areas.map((a) => (
+            <option key={a.id} value={a.id}>{a.nombre}</option>
+          ))}
+        </select>
 
-        {/* AÑO */}
-        <div className={`flex items-center gap-3 p-4 rounded-2xl ${subCard}`}>
-          <CalendarDays className="text-purple-500" size={20} />
-          <select
-            value={filtroAnio}
-            onChange={(e) => setFiltroAnio(e.target.value)}
-            className="w-full bg-transparent outline-none"
-          >
-            <option value="">Año</option>
-            {[2026, 2027, 2028, 2029, 2030, 2031, 2032].map((anio) => (
-              <option key={anio} value={anio}>
-                {anio}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* año */}
+        <select
+          value={filtroAnio}
+          onChange={(e) => setFiltroAnio(e.target.value)}
+          className={`rounded-2xl px-3 py-2.5 text-sm border outline-none ${inp}`}
+        >
+          <option value="">Todos los años</option>
+          {[2025, 2026, 2027, 2028, 2029, 2030].map((y) => (
+            <option key={y} value={y}>{y}</option>
+          ))}
+        </select>
+      </div>
 
-        {/* MES */}
-        <div className={`flex items-center gap-3 p-4 rounded-2xl ${subCard}`}>
-          <CalendarDays className="text-green-500" size={20} />
-          <select
-            value={filtroMes}
-            onChange={(e) => setFiltroMes(e.target.value)}
-            className="w-full bg-transparent outline-none"
+      {/* fila 2: chips de meses */}
+      <div className="flex flex-wrap gap-2">
+        {MESES.map((m) => (
+          <button
+            key={m.valor}
+            onClick={() => setFiltroMes(filtroMes === m.valor ? "" : m.valor)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition
+              ${filtroMes === m.valor
+                ? "bg-violet-500 text-white border-violet-500 shadow-md shadow-violet-400/20"
+                : `${chip} hover:border-violet-400 hover:text-violet-500`
+              }`}
           >
-            <option value="">Todos los meses</option>
-            {MESES.map((mes) => (
-              <option key={mes.valor} value={mes.valor}>
-                {mes.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
+            {m.nombre}
+          </button>
+        ))}
+      </div>
+
+      {/* fila 3: resumen + limpiar */}
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <p className={`text-xs ${sub}`}>
+          Mostrando <span className="font-bold">{totalFiltrados}</span> registro{totalFiltrados !== 1 ? "s" : ""}
+          {filtroMes && <span className="ml-1">· {MESES.find(m => m.valor === filtroMes)?.nombre}</span>}
+          {filtroAnio && <span className="ml-1">· {filtroAnio}</span>}
+        </p>
+        {hayFiltros && (
+          <button
+            onClick={() => { setBusqueda(""); setFiltroArea(""); setFiltroAnio(""); setFiltroMes(""); }}
+            className={`text-xs px-3 py-1 rounded-full border transition font-semibold
+              ${modoNoche ? "text-gray-400 border-[#333] hover:text-white hover:border-white/20" : "text-gray-500 border-gray-200 hover:text-gray-800 hover:border-gray-300"}`}
+          >
+            ✕ Limpiar filtros
+          </button>
+        )}
       </div>
     </div>
   );

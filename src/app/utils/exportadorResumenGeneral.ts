@@ -24,7 +24,7 @@ const MESES = [
    🔧  HELPERS DE ESTILO
 ================================================================ */
 function borde(color = "DDDDDD") {
-  const s = { style: "thin", color: { rgb: color } };
+  const s = { style: "thin" as const, color: { rgb: color } };
   return { top: s, bottom: s, left: s, right: s };
 }
 

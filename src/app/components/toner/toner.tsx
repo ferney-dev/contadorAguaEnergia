@@ -1,327 +1,294 @@
 "use client";
 
-import { Printer, Layers, Plus, Save, CalendarDays, Package, User, ScanLine, RefreshCcw, ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
+import { Printer, Layers, Plus, Save, CalendarDays, Package, User, ScanLine,
+         X, MapPin, RefreshCcw } from "lucide-react";
 import TonnerContenedores from "./TonnerContenedores";
 import TonnerFiltros from "./TonnerFiltros";
 import TonnerTabla from "./TonnerTabla";
+import ModalAreasTonner from "./ModalAreasTonner";
 import { useTonner } from "../../hooks/useTonner";
 import { getThemeClasses } from "./utils";
-import ModalAreasTonner from "./ModalAreasTonner";
-import { useState, useRef } from "react";
 import type { Tonner } from "../../hooks/useTonner";
 
 export default function TablaTonners({ modoNoche }: { modoNoche: boolean }) {
-  const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const formularioRef = useRef<HTMLDivElement>(null);
+  const [mostrarModal,      setMostrarModal]      = useState(false);
+  const [mostrarModalAreas, setMostrarModalAreas] = useState(false);
 
   const {
-    areas,
-    busqueda,
-    setBusqueda,
-    filtroArea,
-    setFiltroArea,
-    nuevaArea,
-    setNuevaArea,
-    mostrarModalAreas,
-    setMostrarModalAreas,
-    editandoId,
-    filtroAnio,
-    setFiltroAnio,
-    filtroMes,
-    setFiltroMes,
-    nuevo,
-    setNuevo,
-    crearArea,
-    guardar: guardarHook,
-    editar: editarHook,
-    eliminar,
-    limpiarFormulario: limpiarHook,
-    filtrados,
-    totalRegistros,
-    totalCantidad,
-    totalAreasConUso,
+    areas, busqueda, setBusqueda, filtroArea, setFiltroArea,
+    nuevaArea, setNuevaArea, editandoId, filtroAnio, setFiltroAnio,
+    filtroMes, setFiltroMes, nuevo, setNuevo, crearArea,
+    guardar: guardarHook, editar: editarHook, eliminar,
+    limpiarFormulario: limpiarHook, filtrados,
+    totalRegistros, totalCantidad, totalAreasConUso, cargar,
   } = useTonner(modoNoche);
-
-  // Abre el formulario y hace scroll hasta él
-  const abrirFormulario = () => {
-    setMostrarFormulario(true);
-    setTimeout(() => {
-      formularioRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 50);
-  };
-
-  // Cuando se edita desde la tabla: abre el formulario
-  const editar = (t: Tonner) => {
-    editarHook(t);
-    abrirFormulario();
-  };
-
-  // Guarda y cierra el formulario
-  const guardar = async () => {
-    await guardarHook();
-    setMostrarFormulario(false);
-  };
-
-  // Cancela y cierra el formulario
-  const limpiarFormulario = () => {
-    limpiarHook();
-    setMostrarFormulario(false);
-  };
 
   const { fondo, card, input, subCard } = getThemeClasses(modoNoche);
 
+  const bg  = modoNoche ? "bg-[#0b0b0b]"                            : "bg-[#ffffff]";
+  const txt = modoNoche ? "text-white"                               : "text-gray-800";
+  const sub = modoNoche ? "text-gray-400"                            : "text-gray-500";
+  const inp = modoNoche ? "bg-[#1e1e1e] border-white/10 text-white placeholder-gray-500"
+                        : "bg-white border-gray-200 text-gray-800 placeholder-gray-400";
+
+  const editar = (t: Tonner) => {
+    editarHook(t);
+    setMostrarModal(true);
+  };
+
+  const guardar = async () => {
+    await guardarHook();
+    setMostrarModal(false);
+  };
+
+  const limpiar = () => {
+    limpiarHook();
+    setMostrarModal(false);
+  };
+
   return (
-    <div className={`p-4 sm:p-6 rounded-3xl ${fondo}`}>
-      {/* TARJETAS + BOTÓN GESTIÓN DE ÁREAS */}
-      <div className="mb-6 space-y-5">
+    <div className={`min-h-screen p-4 md:p-6 ${bg}`}>
+      <div className="max-w-7xl mx-auto space-y-5">
+
+        {/* ══ HEADER ════════════════════════════════════════════ */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h1 className={`text-2xl font-bold flex items-center gap-2 ${txt}`}>
+              🖨️ Inventario de Tonners
+            </h1>
+            <p className={`text-sm mt-0.5 ${sub}`}>Control y gestión de suministros de impresión</p>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => setMostrarModalAreas(true)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-sm font-semibold transition
+                hover:scale-105 active:scale-95
+                ${modoNoche ? "bg-[#1e1e1e] border-white/10 text-gray-200 hover:bg-[#252525]" : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm"}`}
+            >
+              <Layers size={15} /> Áreas
+            </button>
+            <button
+              onClick={() => { limpiarHook(); setMostrarModal(true); }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-500
+                text-white font-semibold text-sm shadow-lg shadow-violet-500/25 transition hover:scale-105 active:scale-95"
+            >
+              <Plus size={15} /> Registrar tonner
+            </button>
+          </div>
+        </div>
+
+        {/* ══ KPIs ══════════════════════════════════════════════ */}
         <TonnerContenedores
-          card={card}
+          card={card} modoNoche={modoNoche}
           totalRegistros={totalRegistros}
           totalCantidad={totalCantidad}
           totalAreasConUso={totalAreasConUso}
         />
 
-        {/* CARD DE GESTIÓN DE ÁREAS + BOTÓN CREAR TONNER */}
-        <div className={`rounded-3xl p-5 sm:p-6 ${card}`}>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-purple-500/10 text-purple-500">
-                <Layers size={22} />
-              </div>
-              <div>
-                <h3 className="text-base font-bold">Gestión de áreas</h3>
-                <p className={`text-sm ${modoNoche ? "text-gray-400" : "text-gray-500"}`}>
-                  Crea, edita y elimina las áreas disponibles.
-                </p>
-              </div>
+        {/* ══ CREAR ÁREA RÁPIDA ═════════════════════════════════ */}
+        <div className={`rounded-2xl border p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3
+          ${modoNoche ? "bg-[#161616] border-white/8" : "bg-white border-gray-100 shadow-sm"}`}>
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-purple-500/10 flex items-center justify-center">
+              <MapPin className="w-4 h-4 text-purple-500" />
             </div>
-
-            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-              {/* Input crear nueva área */}
-              <div className={`flex items-center gap-2 rounded-2xl px-4 py-3 ${modoNoche ? "bg-[#1a1a1a] border border-white/10" : "bg-gray-50 border border-gray-200"}`}>
-                <Plus className="shrink-0 text-blue-500" size={16} />
-                <input
-                  value={nuevaArea}
-                  onChange={(e) => setNuevaArea(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") crearArea(); }}
-                  placeholder="Nueva área + Enter"
-                  className="w-44 bg-transparent text-sm outline-none"
-                />
-              </div>
-
-              {/* Botón editar áreas */}
-              <button
-                onClick={() => setMostrarModalAreas(true)}
-                className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-purple-600 to-purple-500 px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:scale-105 active:scale-95"
-              >
-                <Layers size={16} />
-                Editar áreas
-              </button>
-
-              {/* Botón mostrar/ocultar formulario */}
-              <button
-                onClick={() => {
-                  if (mostrarFormulario) {
-                    limpiarFormulario();
-                  } else {
-                    abrirFormulario();
-                  }
-                }}
-                className={`flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:scale-105 active:scale-95 ${
-                  mostrarFormulario
-                    ? "bg-gradient-to-r from-gray-600 to-gray-500"
-                    : "bg-gradient-to-r from-green-600 to-green-500"
-                }`}
-              >
-                {mostrarFormulario ? (
-                  <><ChevronUp size={16} /> Ocultar formulario</>
-                ) : (
-                  <><Plus size={16} /> Crear tonner</>
-                )}
-              </button>
-            </div>
+            <p className={`text-sm font-semibold ${txt}`}>Nueva área</p>
           </div>
-        </div>
-      </div>
-
-      {/* FORMULARIO – visible solo cuando mostrarFormulario = true */}
-      {mostrarFormulario && (
-      <div ref={formularioRef} className={`p-5 sm:p-6 mb-6 rounded-3xl ${card}`}>
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-          <div>
-            <h3 className="font-bold text-xl flex items-center gap-2">
-              <Package className="text-green-500" />
-              {editandoId ? "Editar tonner" : "Registrar tonner"}
-            </h3>
-            <p className="text-sm opacity-70 mt-1">
-              La fecha se guarda automáticamente, pero también puedes ajustarla si
-              lo necesitas.
-            </p>
+          <div className={`flex-1 flex items-center gap-2 px-3 py-2.5 rounded-2xl border ${inp}`}>
+            <Plus className="w-4 h-4 text-violet-400 shrink-0" />
+            <input
+              value={nuevaArea}
+              onChange={(e) => setNuevaArea(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") crearArea(); }}
+              placeholder="Nombre del área + Enter para crear"
+              className="flex-1 bg-transparent outline-none text-sm"
+            />
           </div>
-
           <button
-            onClick={limpiarFormulario}
-            className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gray-500 text-white shadow-md hover:scale-105 transition"
+            onClick={crearArea}
+            disabled={!nuevaArea.trim()}
+            className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-500 text-white text-sm font-semibold
+              shadow-md transition hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
           >
-            <RefreshCcw size={18} />
-            {editandoId ? "Cancelar edición" : "Cerrar formulario"}
+            Crear
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          <div className={`p-4 rounded-2xl ${subCard}`}>
-            <label className="text-sm font-semibold opacity-80 flex items-center gap-2 mb-2">
-              <Layers size={16} className="text-blue-500" />
-              Área
-            </label>
-            <select
-              value={nuevo.area_id || ""}
-              className={`w-full p-3 rounded-2xl text-sm sm:text-base outline-none transition ${input} focus:ring-2 focus:ring-blue-500`}
-              onChange={(e) =>
-                setNuevo({ ...nuevo, area_id: Number(e.target.value) })
-              }
-            >
-              <option value="">Seleccionar área</option>
-              {areas.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* ══ FILTROS ═══════════════════════════════════════════ */}
+        <TonnerFiltros
+          modoNoche={modoNoche} card={card} subCard={subCard}
+          busqueda={busqueda} setBusqueda={setBusqueda}
+          filtroArea={filtroArea} setFiltroArea={setFiltroArea}
+          filtroAnio={filtroAnio} setFiltroAnio={setFiltroAnio}
+          filtroMes={filtroMes} setFiltroMes={setFiltroMes}
+          areas={areas} totalFiltrados={filtrados.length}
+        />
 
-          <div className={`p-4 rounded-2xl ${subCard}`}>
-            <label className="text-sm font-semibold opacity-80 flex items-center gap-2 mb-2">
-              <User size={16} className="text-blue-500" />
-              Responsable
-            </label>
-            <input
-              value={nuevo.responsable}
-              placeholder="Nombre del responsable"
-              className={`w-full p-3 rounded-2xl text-sm sm:text-base outline-none transition ${input} focus:ring-2 focus:ring-blue-500`}
-              onChange={(e) =>
-                setNuevo({ ...nuevo, responsable: e.target.value })
-              }
-            />
-          </div>
+        {/* ══ TABLA / TARJETAS ══════════════════════════════════ */}
+        <TonnerTabla
+          modoNoche={modoNoche} areas={areas}
+          filtrados={filtrados} editar={editar} eliminar={eliminar}
+        />
+      </div>
 
-          <div className={`p-4 rounded-2xl ${subCard}`}>
-            <label className="text-sm font-semibold opacity-80 flex items-center gap-2 mb-2">
-              <ScanLine size={16} className="text-purple-500" />
-              Modelo tonner
-            </label>
-            <input
-              value={nuevo.modelo_tonner}
-              placeholder="Modelo del tonner"
-              className={`w-full p-3 rounded-2xl text-sm sm:text-base outline-none transition ${input} focus:ring-2 focus:ring-purple-500`}
-              onChange={(e) =>
-                setNuevo({ ...nuevo, modelo_tonner: e.target.value })
-              }
-            />
-          </div>
+      {/* ══ MODAL REGISTRAR/EDITAR ════════════════════════════ */}
+      {mostrarModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={limpiar}
+        >
+          <div
+            className={`relative w-full sm:max-w-2xl rounded-t-[32px] sm:rounded-[32px] flex flex-col overflow-hidden shadow-2xl
+              ${modoNoche ? "bg-[#161616] border border-white/10" : "bg-white border border-gray-200"}`}
+            style={{ maxHeight: "92vh" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* header modal */}
+            <div className="bg-gradient-to-r from-violet-600 to-purple-500 px-5 py-4 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
+                  <Printer className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-white font-bold text-lg leading-tight">
+                    {editandoId ? "Editar tonner" : "Registrar tonner"}
+                  </h2>
+                  <p className="text-purple-200 text-xs">
+                    {editandoId ? "Modifica los datos del registro" : "Completa los campos del nuevo tonner"}
+                  </p>
+                </div>
+              </div>
+              <button onClick={limpiar} className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition">
+                <X size={18} />
+              </button>
+            </div>
 
-          <div className={`p-4 rounded-2xl ${subCard}`}>
-            <label className="text-sm font-semibold opacity-80 flex items-center gap-2 mb-2">
-              <Printer size={16} className="text-green-500" />
-              Modelo impresora
-            </label>
-            <input
-              value={nuevo.modelo_impresora}
-              placeholder="Ej: HP LaserJet Pro"
-              className={`w-full p-3 rounded-2xl text-sm sm:text-base outline-none transition ${input} focus:ring-2 focus:ring-green-500`}
-              onChange={(e) =>
-                setNuevo({ ...nuevo, modelo_impresora: e.target.value })
-              }
-            />
-          </div>
+            {/* body modal */}
+            <div className="flex-1 overflow-y-auto px-5 py-5 space-y-3" style={{ scrollbarWidth: "none" }}>
 
-          <div className={`p-4 rounded-2xl ${subCard}`}>
-            <label className="text-sm font-semibold opacity-80 flex items-center gap-2 mb-2">
-              <Package size={16} className="text-amber-500" />
-              Cantidad
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={nuevo.cantidad}
-              className={`w-full p-3 rounded-2xl text-sm sm:text-base outline-none transition ${input} focus:ring-2 focus:ring-amber-500`}
-              onChange={(e) =>
-                setNuevo({
-                  ...nuevo,
-                  cantidad: Number(e.target.value) || 1,
-                })
-              }
-            />
-          </div>
+              {/* Área */}
+              <Campo icono={<Layers className="w-5 h-5 text-violet-400" />} label="Área *" modoNoche={modoNoche}>
+                <select
+                  value={nuevo.area_id || ""}
+                  onChange={(e) => setNuevo({ ...nuevo, area_id: Number(e.target.value) })}
+                  className="flex-1 bg-transparent outline-none text-sm"
+                >
+                  <option value="">Seleccionar área</option>
+                  {areas.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
+                </select>
+              </Campo>
 
-          <div className={`p-4 rounded-2xl ${subCard}`}>
-            <label className="text-sm font-semibold opacity-80 flex items-center gap-2 mb-2">
-              <CalendarDays size={16} className="text-blue-500" />
-              Fecha del registro
-            </label>
+              {/* Responsable */}
+              <Campo icono={<User className="w-5 h-5 text-blue-400" />} label="Responsable *" modoNoche={modoNoche}>
+                <input
+                  value={nuevo.responsable}
+                  onChange={(e) => setNuevo({ ...nuevo, responsable: e.target.value })}
+                  placeholder="Nombre del responsable"
+                  className="flex-1 bg-transparent outline-none text-sm"
+                />
+              </Campo>
 
-            <input
-              type="date"
-              value={nuevo.fecha}
-              className={`w-full p-3 rounded-2xl outline-none ${input}`}
-              onChange={(e) =>
-                setNuevo({ ...nuevo, fecha: e.target.value })
-              }
-            />
+              {/* Modelo tonner */}
+              <Campo icono={<ScanLine className="w-5 h-5 text-purple-400" />} label="Modelo tonner" modoNoche={modoNoche}>
+                <input
+                  value={nuevo.modelo_tonner}
+                  onChange={(e) => setNuevo({ ...nuevo, modelo_tonner: e.target.value })}
+                  placeholder="Ej: HP CF217A"
+                  className="flex-1 bg-transparent outline-none text-sm"
+                />
+              </Campo>
 
-            <p className="text-xs opacity-60 mt-1">
-              Puedes cambiar la fecha manualmente
-            </p>
-          </div>
+              {/* Modelo impresora */}
+              <Campo icono={<Printer className="w-5 h-5 text-emerald-400" />} label="Modelo impresora" modoNoche={modoNoche}>
+                <input
+                  value={nuevo.modelo_impresora}
+                  onChange={(e) => setNuevo({ ...nuevo, modelo_impresora: e.target.value })}
+                  placeholder="Ej: HP LaserJet Pro M402"
+                  className="flex-1 bg-transparent outline-none text-sm"
+                />
+              </Campo>
 
-          <div className="flex items-end">
-            <button
-              onClick={guardar}
-              className={`w-full flex items-center justify-center gap-2 px-5 py-4 rounded-2xl text-white font-bold shadow-lg transition hover:scale-[1.02] active:scale-95 ${editandoId
-                ? "bg-gradient-to-r from-amber-500 to-amber-400"
-                : "bg-gradient-to-r from-green-600 to-green-500"
-                }`}
-            >
-              <Save size={18} />
-              {editandoId ? "Actualizar tonner" : "Guardar tonner"}
-            </button>
+              {/* Cantidad + Fecha en fila */}
+              <div className="grid grid-cols-2 gap-3">
+                <Campo icono={<Package className="w-5 h-5 text-amber-400" />} label="Cantidad" modoNoche={modoNoche}>
+                  <input
+                    type="number"
+                    min="1"
+                    value={nuevo.cantidad}
+                    onChange={(e) => setNuevo({ ...nuevo, cantidad: Number(e.target.value) || 1 })}
+                    className="flex-1 bg-transparent outline-none text-sm w-16"
+                  />
+                </Campo>
+
+                <Campo icono={<CalendarDays className="w-5 h-5 text-cyan-400" />} label="Fecha" modoNoche={modoNoche}>
+                  <input
+                    type="date"
+                    value={nuevo.fecha}
+                    onChange={(e) => setNuevo({ ...nuevo, fecha: e.target.value })}
+                    className="flex-1 bg-transparent outline-none text-sm"
+                  />
+                </Campo>
+              </div>
+
+            </div>
+
+            {/* footer modal */}
+            <div className={`px-5 py-4 border-t flex gap-3 shrink-0
+              ${modoNoche ? "bg-[#111] border-white/8" : "bg-gray-50 border-gray-200"}`}>
+              <button
+                onClick={limpiar}
+                className={`flex-1 py-3 rounded-2xl border text-sm font-semibold transition
+                  ${modoNoche ? "bg-[#252525] border-white/10 text-gray-300 hover:bg-[#2e2e2e]" : "bg-white border-gray-300 text-gray-600 hover:bg-gray-100"}`}
+              >
+                <RefreshCcw className="inline w-4 h-4 mr-1" />
+                {editandoId ? "Cancelar edición" : "Cancelar"}
+              </button>
+              <button
+                onClick={guardar}
+                className={`flex-1 py-3 rounded-2xl text-white text-sm font-bold shadow-lg transition
+                  ${editandoId
+                    ? "bg-gradient-to-r from-amber-500 to-amber-400 shadow-amber-400/20 hover:from-amber-600 hover:to-amber-500"
+                    : "bg-gradient-to-r from-violet-600 to-purple-500 shadow-violet-500/25 hover:from-violet-700 hover:to-purple-600"
+                  }`}
+              >
+                <Save className="inline w-4 h-4 mr-1" />
+                {editandoId ? "Actualizar" : "Guardar tonner"}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
       )}
 
-      {/* FILTROS */}
-      <TonnerFiltros
-        modoNoche={modoNoche}
-        card={card}
-        subCard={subCard}
-        busqueda={busqueda}
-        setBusqueda={setBusqueda}
-        filtroArea={filtroArea}
-        setFiltroArea={setFiltroArea}
-        filtroAnio={filtroAnio}
-        setFiltroAnio={setFiltroAnio}
-        filtroMes={filtroMes}
-        setFiltroMes={setFiltroMes}
-        areas={areas}
-      />
-
-      {/* TABLA */}
-      <TonnerTabla
-        modoNoche={modoNoche}
-        areas={areas}
-        filtrados={filtrados}
-        editar={editar}
-        eliminar={eliminar}
-      />
-
+      {/* ══ MODAL ÁREAS ═══════════════════════════════════════ */}
       <ModalAreasTonner
         abierto={mostrarModalAreas}
         onClose={() => setMostrarModalAreas(false)}
         areas={areas}
-        cargar={() => {}}
+        cargar={cargar}
         modoNoche={modoNoche}
       />
+    </div>
+  );
+}
+
+/* ── Campo reutilizable del formulario ── */
+function Campo({ icono, label, modoNoche, children }: {
+  icono: React.ReactNode;
+  label: string;
+  modoNoche: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <p className={`text-[11px] font-bold uppercase tracking-wider mb-1.5 ${modoNoche ? "text-gray-400" : "text-gray-500"}`}>
+        {label}
+      </p>
+      <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition
+        ${modoNoche ? "bg-[#1e1e1e] border-white/10 text-white" : "bg-gray-50 border-gray-200 text-gray-800"}`}>
+        {icono}
+        {children}
+      </div>
     </div>
   );
 }
