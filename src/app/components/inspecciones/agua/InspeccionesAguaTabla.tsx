@@ -297,13 +297,26 @@ export default function InspeccionesAguaTabla({
 
             {/* TABLA RESUMEN */}
             <div className={`mt-8 overflow-auto rounded-2xl border-2 ${modoNoche ? "bg-[#1a1a1a] border-[#333]" : "bg-white border-gray-200"}`}>
-              <div className={`p-4 border-b-2 ${modoNoche ? "border-[#444]" : "border-gray-300"}`}>
-                <h3 className={`text-lg font-bold ${modoNoche ? "text-white" : "text-gray-800"}`}>📊 Resumen de la Inspección</h3>
-                <p className={`text-sm mt-1 ${modoNoche ? "text-gray-400" : "text-gray-500"}`}>Totales por categoría sanitaria</p>
+              <div className={`px-5 py-4 flex items-center gap-3 border-b-2 ${
+                modoNoche ? "bg-[#222] border-[#333]" : "bg-gray-50 border-gray-200"
+              }`}>
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                  modoNoche ? "bg-[#2e2e2e]" : "bg-gray-200"
+                }`}>
+                  <span className="text-lg">📊</span>
+                </div>
+                <div>
+                  <h3 className={`font-bold text-base tracking-wide ${modoNoche ? "text-white" : "text-gray-800"}`}>
+                    Resumen de la Inspección
+                  </h3>
+                  <p className={`text-xs mt-0.5 ${modoNoche ? "text-gray-400" : "text-gray-500"}`}>
+                    Totales por categoría sanitaria
+                  </p>
+                </div>
               </div>
               <table className="w-full text-sm border-collapse">
                 <thead>
-                  <tr className={`text-center text-xs uppercase font-bold ${modoNoche ? "bg-gradient-to-r from-red-900 to-red-700" : "bg-gradient-to-r from-red-600 to-red-500"} text-white`}>
+                  <tr className="text-center text-xs uppercase font-bold bg-[#C40000] text-white">
                     <th className={`p-4 border-b-2 ${modoNoche ? "border-[#444]" : "border-red-400"}`}>Tipo</th>
                     <th className={`p-4 border-b-2 ${modoNoche ? "border-[#444]" : "border-red-400"}`}>✔ Cumple</th>
                     <th className={`p-4 border-b-2 ${modoNoche ? "border-[#444]" : "border-red-400"}`}>✖ No cumple</th>

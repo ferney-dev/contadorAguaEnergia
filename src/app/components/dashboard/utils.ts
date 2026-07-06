@@ -27,14 +27,14 @@ export const obtenerColorAguaPorRango = (valor: number) => {
   if (valor <= RANGOS_AGUA.OPTIMO) return "#0000CC"; // azul
   if (valor <= RANGOS_AGUA.NORMAL) return "#3E6102 "; // verde
   if (valor <= RANGOS_AGUA.ALERTA) return "#facc15"; // amarillo
-  return "#ef4444"; // rojo
+  return "#e61919ff"; // rojo
 };
 
 export const obtenerColorEnergiaPorRango = (valor: number) => {
   if (valor <= RANGOS_ENERGIA.OPTIMO) return "#0000CC"; // 🔵 Azul
   if (valor <= RANGOS_ENERGIA.NORMAL) return "#3E6102 "; // 🟢 Verde
   if (valor <= RANGOS_ENERGIA.ALERTA) return "#facc15"; // 🟡 Amarillo
-  return "#ef4444"; // 🔴 Rojo
+  return "#e61919ff"; // 🔴 Rojo
 };
 
 export const promedioDiario = (lecturas: any) => {

@@ -1,35 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, RefObject } from "react";
 
-export default function BotonesScroll() {
+interface Props {
+  contenedorRef: RefObject<HTMLElement | null>;
+}
+
+export default function BotonesScroll({ contenedorRef }: Props) {
   const [scrollY, setScrollY] = useState(0);
   const [alturaTotal, setAlturaTotal] = useState(0);
 
   useEffect(() => {
+    const el = contenedorRef.current;
+    if (!el) return;
+
     const handleScroll = () => {
-      setScrollY(window.scrollY);
-      setAlturaTotal(document.body.scrollHeight);
+      setScrollY(el.scrollTop);
+      setAlturaTotal(el.scrollHeight - el.clientHeight);
     };
 
     handleScroll(); // ejecutar una vez
-    window.addEventListener("scroll", handleScroll);
+    el.addEventListener("scroll", handleScroll);
 
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [contenedorRef]);
 
   const subirArriba = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    contenedorRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const bajarAbajo = () => {
-    window.scrollTo({
-      top: alturaTotal,
-      behavior: "smooth",
-    });
+    contenedorRef.current?.scrollTo({ top: alturaTotal, behavior: "smooth" });
   };
 
   return (
@@ -53,7 +54,7 @@ export default function BotonesScroll() {
         onClick={bajarAbajo}
         className={`
           p-3 rounded-full shadow-md transition-all duration-300
-          ${scrollY < alturaTotal - 800
+          ${scrollY < alturaTotal - 100
             ? "bg-red-600 hover:bg-red-700 text-white scale-100"
             : "bg-gray-400 text-white opacity-60 scale-90"}
         `}

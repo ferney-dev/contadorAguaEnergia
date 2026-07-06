@@ -1,14 +1,19 @@
 "use client";
 
-import { Printer, Layers, Plus, Save, CalendarDays, Package, User, ScanLine, RefreshCcw } from "lucide-react";
+import { Printer, Layers, Plus, Save, CalendarDays, Package, User, ScanLine, RefreshCcw, ChevronDown, ChevronUp } from "lucide-react";
 import TonnerContenedores from "./TonnerContenedores";
 import TonnerFiltros from "./TonnerFiltros";
 import TonnerTabla from "./TonnerTabla";
 import { useTonner } from "../../hooks/useTonner";
 import { getThemeClasses } from "./utils";
 import ModalAreasTonner from "./ModalAreasTonner";
+import { useState, useRef } from "react";
+import type { Tonner } from "../../hooks/useTonner";
 
 export default function TablaTonners({ modoNoche }: { modoNoche: boolean }) {
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const formularioRef = useRef<HTMLDivElement>(null);
+
   const {
     areas,
     busqueda,
@@ -27,15 +32,41 @@ export default function TablaTonners({ modoNoche }: { modoNoche: boolean }) {
     nuevo,
     setNuevo,
     crearArea,
-    guardar,
-    editar,
+    guardar: guardarHook,
+    editar: editarHook,
     eliminar,
-    limpiarFormulario,
+    limpiarFormulario: limpiarHook,
     filtrados,
     totalRegistros,
     totalCantidad,
     totalAreasConUso,
   } = useTonner(modoNoche);
+
+  // Abre el formulario y hace scroll hasta él
+  const abrirFormulario = () => {
+    setMostrarFormulario(true);
+    setTimeout(() => {
+      formularioRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  };
+
+  // Cuando se edita desde la tabla: abre el formulario
+  const editar = (t: Tonner) => {
+    editarHook(t);
+    abrirFormulario();
+  };
+
+  // Guarda y cierra el formulario
+  const guardar = async () => {
+    await guardarHook();
+    setMostrarFormulario(false);
+  };
+
+  // Cancela y cierra el formulario
+  const limpiarFormulario = () => {
+    limpiarHook();
+    setMostrarFormulario(false);
+  };
 
   const { fondo, card, input, subCard } = getThemeClasses(modoNoche);
 
@@ -50,7 +81,7 @@ export default function TablaTonners({ modoNoche }: { modoNoche: boolean }) {
           totalAreasConUso={totalAreasConUso}
         />
 
-        {/* CARD DE GESTIÓN DE ÁREAS */}
+        {/* CARD DE GESTIÓN DE ÁREAS + BOTÓN CREAR TONNER */}
         <div className={`rounded-3xl p-5 sm:p-6 ${card}`}>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -86,13 +117,36 @@ export default function TablaTonners({ modoNoche }: { modoNoche: boolean }) {
                 <Layers size={16} />
                 Editar áreas
               </button>
+
+              {/* Botón mostrar/ocultar formulario */}
+              <button
+                onClick={() => {
+                  if (mostrarFormulario) {
+                    limpiarFormulario();
+                  } else {
+                    abrirFormulario();
+                  }
+                }}
+                className={`flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:scale-105 active:scale-95 ${
+                  mostrarFormulario
+                    ? "bg-gradient-to-r from-gray-600 to-gray-500"
+                    : "bg-gradient-to-r from-green-600 to-green-500"
+                }`}
+              >
+                {mostrarFormulario ? (
+                  <><ChevronUp size={16} /> Ocultar formulario</>
+                ) : (
+                  <><Plus size={16} /> Crear tonner</>
+                )}
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* FORMULARIO */}
-      <div className={`p-5 sm:p-6 mb-6 rounded-3xl ${card}`}>
+      {/* FORMULARIO – visible solo cuando mostrarFormulario = true */}
+      {mostrarFormulario && (
+      <div ref={formularioRef} className={`p-5 sm:p-6 mb-6 rounded-3xl ${card}`}>
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
           <div>
             <h3 className="font-bold text-xl flex items-center gap-2">
@@ -105,15 +159,13 @@ export default function TablaTonners({ modoNoche }: { modoNoche: boolean }) {
             </p>
           </div>
 
-          {editandoId && (
-            <button
-              onClick={limpiarFormulario}
-              className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gray-500 text-white shadow-md hover:scale-105 transition"
-            >
-              <RefreshCcw size={18} />
-              Cancelar edición
-            </button>
-          )}
+          <button
+            onClick={limpiarFormulario}
+            className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gray-500 text-white shadow-md hover:scale-105 transition"
+          >
+            <RefreshCcw size={18} />
+            {editandoId ? "Cancelar edición" : "Cerrar formulario"}
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -236,6 +288,7 @@ export default function TablaTonners({ modoNoche }: { modoNoche: boolean }) {
           </div>
         </div>
       </div>
+      )}
 
       {/* FILTROS */}
       <TonnerFiltros

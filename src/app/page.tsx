@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useLayoutEffect, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
 import {
   Home,
   Droplet,
@@ -28,6 +28,7 @@ import ComparativoEnergia from "./components/comparativoEnergia/comparativoEnerg
 import Inspecciones from "./components/inspecciones/inspecciones";
 import Resmas from "./components/resmas/resmas";
 import Tonner from "./components/toner/toner";
+import BotonesScroll from "./components/BotonSubir";
 
 const IDS_VISTAS = [
   "inicio",
@@ -76,6 +77,8 @@ export default function MenuPrincipal() {
   const [vistaActual, setVistaActual] = useState("inicio");
   const [modoNoche, setModoNoche] = useState(false);
   const [anioActual, setAnioActual] = useState(new Date().getFullYear());
+
+  const mainRef = useRef<HTMLElement>(null);
 
   const navegarVista = useCallback((id: string) => {
     setVistaActual(id);
@@ -179,23 +182,23 @@ export default function MenuPrincipal() {
 
   const opciones = [
 
-    { id: "inicio", nombre: "Inicio", icono: <Home size={28} /> },
+    { id: "inicio", nombre: "Inicio", icono: <Home style={{ width: 28, height: 28, minWidth: 28, minHeight: 28, flexShrink: 0 }} /> },
 
-    { id: "agua", nombre: "Agua", icono: <Droplet size={28} /> },
+    { id: "agua", nombre: "Agua", icono: <Droplet style={{ width: 28, height: 28, minWidth: 28, minHeight: 28, flexShrink: 0 }} /> },
 
-    { id: "energía", nombre: "Energía", icono: <Zap size={28} /> },
+    { id: "energía", nombre: "Energía", icono: <Zap style={{ width: 28, height: 28, minWidth: 28, minHeight: 28, flexShrink: 0 }} /> },
 
-    { id: "lecturas", nombre: "Lecturas", icono: <BookOpen size={28} /> },
+    { id: "lecturas", nombre: "Lecturas", icono: <BookOpen style={{ width: 28, height: 28, minWidth: 28, minHeight: 28, flexShrink: 0 }} /> },
 
-    { id: "comparativoagua", nombre: "Comparativo ", icono: <FaFaucet size={28} /> },
+    { id: "comparativoagua", nombre: "Comparativo ", icono: <FaFaucet style={{ width: 28, height: 28, minWidth: 28, minHeight: 28, flexShrink: 0 }} /> },
 
-    { id: "comparativoenergia", nombre: "Comparativo ", icono: <Plug size={28} /> },
+    { id: "comparativoenergia", nombre: "Comparativo ", icono: <Plug style={{ width: 28, height: 28, minWidth: 28, minHeight: 28, flexShrink: 0 }} /> },
 
-    { id: "inspecciones", nombre: "Inspecciones ", icono: <Recycle size={28} /> },
+    { id: "inspecciones", nombre: "Inspecciones ", icono: <Recycle style={{ width: 28, height: 28, minWidth: 28, minHeight: 28, flexShrink: 0 }} /> },
 
-    { id: "resmas", nombre: "Resmas ", icono: <Layers  size={28} /> },
+    { id: "resmas", nombre: "Resmas ", icono: <Layers style={{ width: 28, height: 28, minWidth: 28, minHeight: 28, flexShrink: 0 }} /> },
 
-    { id: "tonner", nombre: "Tonners ", icono: <Printer size={28} /> },
+    { id: "tonner", nombre: "Tonners ", icono: <Printer style={{ width: 28, height: 28, minWidth: 28, minHeight: 28, flexShrink: 0 }} /> },
   ];
   /* ================= TITULOS ================= */
 
@@ -325,18 +328,23 @@ export default function MenuPrincipal() {
           className={`
             absolute md:static top-0 left-0 h-full z-40
             transition-all duration-300 pt-20 md:pt-10
-            overflow-y-auto
+            overflow-y-auto scrollbar-hide
             ${colores.sidebar}
             ${
               esMovil
                 ? sidebarAbierto
-                  ? "w-56 translate-x-0 shadow-xl"
-                  : "w-56 -translate-x-full"
-                : sidebarAbierto
-                ? "w-60"
-                : "w-20"
+                  ? "translate-x-0 shadow-xl"
+                  : "-translate-x-full"
+                : ""
             }
           `}
+          style={{
+            width: esMovil
+              ? 224
+              : sidebarAbierto
+              ? 240
+              : 80,
+          }}
         >
 
           <nav className="flex flex-col space-y-8 px-2">
@@ -360,7 +368,7 @@ export default function MenuPrincipal() {
                   `}
                 >
 
-                  <div className="w-10 flex justify-center items-center">
+                  <div style={{ width: 40, minWidth: 40, height: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }}>
                     {op.icono}
                   </div>
 
@@ -382,7 +390,7 @@ export default function MenuPrincipal() {
 
         {/* CONTENIDO */}
 
-        <main className={`flex-1 overflow-y-auto p-5 md:p-10 ${colores.contenido}`}>
+        <main ref={mainRef} className={`flex-1 overflow-y-auto p-5 md:p-10 ${colores.contenido}`}>
 
           {vistaActual === "inicio" && <DashboardInicio modoNoche={modoNoche} />}
 
@@ -466,6 +474,8 @@ export default function MenuPrincipal() {
         </main>
 
       </div>
+
+      <BotonesScroll contenedorRef={mainRef} />
 
     </div>
 

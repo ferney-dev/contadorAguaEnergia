@@ -191,5 +191,25 @@ select::-ms-expand {
   display: none;
 }
 
+/* ========================================================= */
+/* 🔕 OCULTAR SCROLLBAR DEL SIDEBAR (scroll funciona igual)  */
+/* ========================================================= */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE / Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+/* Ocultar scrollbar del aside (sidebar) directamente */
+aside::-webkit-scrollbar {
+  display: none;
+}
+aside {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 
 

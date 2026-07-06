@@ -574,6 +574,7 @@ export function useComparativoAgua(modoNoche: boolean) {
     datosEnergia,
     datosFiltrados,
     sedesDB,
+    setSedesDB,
     nuevaFila,
     years,
     anio,

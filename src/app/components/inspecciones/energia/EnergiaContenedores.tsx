@@ -11,6 +11,8 @@ interface Props {
   inspecciones: any[];
   setMostrarModal: (value: boolean) => void;
   finalizarInspeccion: () => void;
+  mesFiltro?: string;
+  anioFiltro?: string;
 }
 
 export default function EnergiaContenedores({
@@ -20,11 +22,23 @@ export default function EnergiaContenedores({
   inspecciones,
   setMostrarModal,
   finalizarInspeccion,
+  mesFiltro = "Todos",
+  anioFiltro = "Todos",
 }: Props) {
   let totalC = 0;
   let totalNC = 0;
 
-  inspecciones.forEach((r) => {
+  // Filtrar inspecciones por mes y año seleccionados (fecha como string para evitar problemas de zona horaria)
+  const inspeccionesFiltradas = inspecciones.filter((r) => {
+    if (!r.fecha) return false;
+    const fechaStr = r.fecha.split("T")[0]; // "2025-06-15"
+    const [anioR, mesR] = fechaStr.split("-");
+    const anioCoincide = anioFiltro === "Todos" || anioR === anioFiltro;
+    const mesCoincide  = mesFiltro  === "Todos" || mesR === mesFiltro;
+    return anioCoincide && mesCoincide;
+  });
+
+  inspeccionesFiltradas.forEach((r) => {
     totalC +=
       Number(r.bombillas_c || 0) +
       Number(r.reflectores_c || 0) +
@@ -65,7 +79,7 @@ export default function EnergiaContenedores({
 
   return (
     <>
-      <div className="grid grid-cols-3 gap-4 mt-6 mb-6 max-w-xl mx-auto">
+      <div className="grid grid-cols-3 gap-4 mt-6 mb-2 max-w-xl mx-auto">
         {cards.map((c, i) => {
           const Icono = c.icono;
           return (
@@ -88,6 +102,14 @@ export default function EnergiaContenedores({
           );
         })}
       </div>
+
+      {/* Indicador de período activo */}
+      <p className={`text-[10px] text-center mb-4 ${modoNoche ? "text-gray-500" : "text-gray-400"}`}>
+        {mesFiltro !== "Todos" || anioFiltro !== "Todos"
+          ? `Mostrando: ${mesFiltro !== "Todos" ? `mes ${mesFiltro}` : "todos los meses"}${anioFiltro !== "Todos" ? ` · ${anioFiltro}` : ""}`
+          : "Mostrando: todos los registros"
+        }
+      </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
         <div className={`rounded-2xl px-4 py-3 flex items-center gap-3 ${estilos.inputSuave}`}>

@@ -12,6 +12,8 @@ interface Props {
   valores: Record<string, Record<number, { c?: string; nc?: string }>>;
   setMostrarModal: (value: boolean) => void;
   finalizarInspeccion: () => void;
+  mesFiltro?: string;
+  anioFiltro?: string;
 }
 
 export default function ReciclajeContenedores({
@@ -22,12 +24,23 @@ export default function ReciclajeContenedores({
   valores,
   setMostrarModal,
   finalizarInspeccion,
+  mesFiltro = "Todos",
+  anioFiltro = "Todos",
 }: Props) {
   let totalC = 0;
   let totalNC = 0;
 
-  // Calcular totales usando valores locales + inspecciones guardadas
-  inspecciones.forEach((r) => {
+  // Filtrar inspecciones por mes y año seleccionados (fecha como string para evitar problemas de zona horaria)
+  const inspeccionesFiltradas = inspecciones.filter((r) => {
+    if (!r.fecha) return false;
+    const fechaStr = r.fecha.split("T")[0]; // "2025-06-15"
+    const [anioR, mesR] = fechaStr.split("-");
+    const anioCoincide = anioFiltro === "Todos" || anioR === anioFiltro;
+    const mesCoincide  = mesFiltro  === "Todos" || mesR === mesFiltro;
+    return anioCoincide && mesCoincide;
+  });
+
+  inspeccionesFiltradas.forEach((r) => {
     totalC +=
       Number(r.reciclables_c || 0) +
       Number(r.ordinarios_c || 0) +
@@ -40,13 +53,15 @@ export default function ReciclajeContenedores({
       Number(r.presintos_nc || 0);
   });
 
-  // Sumar valores locales que aún no están guardados
-  Object.values(valores).forEach((campoValores) => {
-    Object.values(campoValores).forEach((val) => {
-      totalC += Number(val.c || 0);
-      totalNC += Number(val.nc || 0);
+  // Sumar valores locales que aún no están guardados (solo cuando no hay filtro activo)
+  if (mesFiltro === "Todos" && anioFiltro === "Todos") {
+    Object.values(valores).forEach((campoValores) => {
+      Object.values(campoValores).forEach((val) => {
+        totalC += Number(val.c || 0);
+        totalNC += Number(val.nc || 0);
+      });
     });
-  });
+  }
 
   const totalGeneral = totalC + totalNC;
 
@@ -58,7 +73,7 @@ export default function ReciclajeContenedores({
 
   return (
     <>
-      <div className="grid grid-cols-3 gap-4 mt-6 mb-6 max-w-xl mx-auto">
+      <div className="grid grid-cols-3 gap-4 mt-6 mb-2 max-w-xl mx-auto">
         {cards.map((c, i) => {
           const Icono = c.icono;
           return (
@@ -81,6 +96,14 @@ export default function ReciclajeContenedores({
           );
         })}
       </div>
+
+      {/* Indicador de período activo */}
+      <p className={`text-[10px] text-center mb-4 ${modoNoche ? "text-gray-500" : "text-gray-400"}`}>
+        {mesFiltro !== "Todos" || anioFiltro !== "Todos"
+          ? `Mostrando: ${mesFiltro !== "Todos" ? `mes ${mesFiltro}` : "todos los meses"}${anioFiltro !== "Todos" ? ` · ${anioFiltro}` : ""}`
+          : "Mostrando: todos los registros"
+        }
+      </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
         <div className={`rounded-2xl px-4 py-3 flex items-center gap-3 ${estilos.inputSuave}`}>
