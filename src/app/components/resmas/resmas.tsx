@@ -23,7 +23,7 @@ export default function TablaResmasAvanzada({ modoNoche }: Props) {
     comparar,
   } = useResmas(modoNoche);
 
-  const bg  = modoNoche ? "bg-[#1f1f1f]" : "bg-[#f4f6fa]";
+  const bg  = modoNoche ? "bg-[#1f1f1f]" : "bg-[#ffffff]";
   const txt = modoNoche ? "text-white"   : "text-gray-800";
   const sub = modoNoche ? "text-gray-400": "text-gray-500";
 
