@@ -64,8 +64,8 @@ export default function TonnerTabla({ modoNoche, areas, filtrados, editar, elimi
       {/* ── barra superior ── */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-violet-500/10 flex items-center justify-center">
-            <Printer className="w-4 h-4 text-violet-500" />
+          <div className="w-8 h-8 rounded-xl bg-[#C40000]/10 flex items-center justify-center">
+            <Printer className="w-4 h-4 text-[#C40000]" />
           </div>
           <div>
             <p className={`text-sm font-bold ${txt}`}>Inventario</p>
@@ -79,7 +79,7 @@ export default function TonnerTabla({ modoNoche, areas, filtrados, editar, elimi
           className={`flex items-center gap-2 px-4 py-2 rounded-2xl border text-xs font-semibold transition
             hover:scale-105 active:scale-95
             ${vistaTabla
-              ? (modoNoche ? "bg-violet-900/30 border-violet-700 text-violet-300" : "bg-violet-100 border-violet-400 text-violet-700")
+              ? (modoNoche ? "bg-[#C40000]/20 border-[#C40000]/40 text-red-300" : "bg-[#C40000]/10 border-[#C40000]/30 text-[#C40000]")
               : (modoNoche ? "bg-[#1e1e1e] border-white/10 text-gray-300 hover:bg-[#252525]" : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50")
             }`}
         >
@@ -109,8 +109,8 @@ export default function TonnerTabla({ modoNoche, areas, filtrados, editar, elimi
                 {/* cabecera */}
                 <div className="flex items-start justify-between gap-2">
                   <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0
-                    ${modoNoche ? "bg-[#222]" : "bg-violet-50"}`}>
-                    <Printer className="w-5 h-5 text-violet-500" />
+                    ${modoNoche ? "bg-[#C40000]/15" : "bg-[#C40000]/8"}`}>
+                    <Printer className="w-5 h-5 text-[#C40000]" />
                   </div>
                   <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold truncate max-w-[120px] ${areaColor(t.area_id, modoNoche)}`}>
                     {areaNombre}
@@ -124,7 +124,7 @@ export default function TonnerTabla({ modoNoche, areas, filtrados, editar, elimi
 
                 {/* tonner */}
                 <div className={`flex items-center gap-1.5 text-xs ${sub}`}>
-                  <ScanLine className="w-3.5 h-3.5 shrink-0 text-purple-400" />
+                  <ScanLine className="w-3.5 h-3.5 shrink-0 text-[#C40000]" />
                   <span className="truncate">{t.modelo_tonner || "—"}</span>
                 </div>
 
@@ -174,7 +174,7 @@ export default function TonnerTabla({ modoNoche, areas, filtrados, editar, elimi
       {vistaTabla && filtrados.length > 0 && (
         <div className={`rounded-2xl border overflow-hidden ${card}`}>
           {/* header tabla */}
-          <div className="px-5 py-4 bg-gradient-to-r from-violet-600 to-purple-500 flex items-center justify-between">
+          <div className="px-5 py-4 bg-[#C40000] flex items-center justify-between">
             <div className="flex items-center gap-3 text-white">
               <Printer size={18} />
               <span className="font-bold text-sm">Inventario de Tonners</span>
@@ -189,9 +189,9 @@ export default function TonnerTabla({ modoNoche, areas, filtrados, editar, elimi
               <thead>
                 <tr className={`uppercase tracking-wider font-bold ${modoNoche ? "bg-[#1a1a1a] text-gray-400 border-b border-white/8" : "bg-gray-50 text-gray-500 border-b border-gray-200"}`}>
                   {[
-                    { icon: <Layers size={13} className="text-violet-500" />, label: "Área" },
+                    { icon: <Layers size={13} className="text-[#C40000]" />, label: "Área" },
                     { icon: <User size={13} className="text-blue-500" />, label: "Responsable" },
-                    { icon: <ScanLine size={13} className="text-purple-500" />, label: "Tonner" },
+                    { icon: <ScanLine size={13} className="text-[#C40000]" />, label: "Tonner" },
                     { icon: <Printer size={13} className="text-emerald-500" />, label: "Impresora" },
                     { icon: <Package size={13} className="text-amber-500" />, label: "Qty" },
                     { icon: <CalendarDays size={13} className="text-cyan-500" />, label: "Fecha" },
@@ -210,7 +210,7 @@ export default function TonnerTabla({ modoNoche, areas, filtrados, editar, elimi
                   const areaNombre = areas.find((a) => a.id === t.area_id)?.nombre || "-";
                   return (
                     <tr key={t.id} className={`border-b transition
-                      ${modoNoche ? "border-white/5 hover:bg-white/3" : "border-gray-100 hover:bg-violet-50/40"}
+                      ${modoNoche ? "border-white/5 hover:bg-white/3" : "border-gray-100 hover:bg-red-50/30"}
                       ${i % 2 === 0 ? (modoNoche ? "bg-[#161616]" : "bg-white") : (modoNoche ? "bg-[#1a1a1a]" : "bg-gray-50/50")}`}>
                       <td className="px-4 py-3 font-semibold">
                         <span className={`px-2 py-0.5 rounded-full border text-[10px] font-semibold ${areaColor(t.area_id, modoNoche)}`}>{areaNombre}</span>
@@ -253,7 +253,7 @@ export default function TonnerTabla({ modoNoche, areas, filtrados, editar, elimi
           <div className={`px-5 py-3 flex items-center justify-between text-xs font-medium
             ${modoNoche ? "bg-[#111] border-t border-white/8 text-gray-400" : "bg-gray-50 border-t border-gray-200 text-gray-500"}`}>
             <span>📊 {filtrados.length} registros mostrados</span>
-            <span>📦 <strong className={modoNoche ? "text-violet-300" : "text-violet-600"}>{totalCantidad}</strong> tonners en total</span>
+            <span>📦 <strong className={modoNoche ? "text-red-400" : "text-[#C40000]"}>{totalCantidad}</strong> tonners en total</span>
           </div>
         </div>
       )}

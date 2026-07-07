@@ -49,7 +49,7 @@ export default function TablaTonners({ modoNoche }: { modoNoche: boolean }) {
 
   return (
     <div className={`min-h-screen p-4 md:p-6 ${bg}`}>
-      <div className="max-w-7xl mx-auto space-y-5">
+      <div className="max-w-6xl mx-auto space-y-5">
 
         {/* ══ HEADER ════════════════════════════════════════════ */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -70,8 +70,8 @@ export default function TablaTonners({ modoNoche }: { modoNoche: boolean }) {
             </button>
             <button
               onClick={() => { limpiarHook(); setMostrarModal(true); }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-500
-                text-white font-semibold text-sm shadow-lg shadow-violet-500/25 transition hover:scale-105 active:scale-95"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#C40000] hover:bg-red-700
+                text-white font-semibold text-sm shadow-lg shadow-[#C40000]/25 transition hover:scale-105 active:scale-95"
             >
               <Plus size={15} /> Registrar tonner
             </button>
@@ -90,13 +90,13 @@ export default function TablaTonners({ modoNoche }: { modoNoche: boolean }) {
         <div className={`rounded-2xl border p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3
           ${modoNoche ? "bg-[#161616] border-white/8" : "bg-white border-gray-100 shadow-sm"}`}>
           <div className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 rounded-xl bg-purple-500/10 flex items-center justify-center">
-              <MapPin className="w-4 h-4 text-purple-500" />
+            <div className="w-8 h-8 rounded-xl bg-[#C40000]/10 flex items-center justify-center">
+              <MapPin className="w-4 h-4 text-[#C40000]" />
             </div>
             <p className={`text-sm font-semibold ${txt}`}>Nueva área</p>
           </div>
           <div className={`flex-1 flex items-center gap-2 px-3 py-2.5 rounded-2xl border ${inp}`}>
-            <Plus className="w-4 h-4 text-violet-400 shrink-0" />
+            <Plus className="w-4 h-4 text-[#C40000] shrink-0" />
             <input
               value={nuevaArea}
               onChange={(e) => setNuevaArea(e.target.value)}
@@ -108,7 +108,7 @@ export default function TablaTonners({ modoNoche }: { modoNoche: boolean }) {
           <button
             onClick={crearArea}
             disabled={!nuevaArea.trim()}
-            className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-500 text-white text-sm font-semibold
+            className="px-4 py-2.5 rounded-2xl bg-[#C40000] hover:bg-red-700 text-white text-sm font-semibold
               shadow-md transition hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
           >
             Crear
@@ -145,7 +145,7 @@ export default function TablaTonners({ modoNoche }: { modoNoche: boolean }) {
             onClick={(e) => e.stopPropagation()}
           >
             {/* header modal */}
-            <div className="bg-gradient-to-r from-violet-600 to-purple-500 px-5 py-4 flex items-center justify-between shrink-0">
+            <div className="bg-[#C40000] px-5 py-4 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
                   <Printer className="w-5 h-5 text-white" />
@@ -154,7 +154,7 @@ export default function TablaTonners({ modoNoche }: { modoNoche: boolean }) {
                   <h2 className="text-white font-bold text-lg leading-tight">
                     {editandoId ? "Editar tonner" : "Registrar tonner"}
                   </h2>
-                  <p className="text-purple-200 text-xs">
+                  <p className="text-red-200 text-xs">
                     {editandoId ? "Modifica los datos del registro" : "Completa los campos del nuevo tonner"}
                   </p>
                 </div>
@@ -168,7 +168,7 @@ export default function TablaTonners({ modoNoche }: { modoNoche: boolean }) {
             <div className="flex-1 overflow-y-auto px-5 py-5 space-y-3" style={{ scrollbarWidth: "none" }}>
 
               {/* Área */}
-              <Campo icono={<Layers className="w-5 h-5 text-violet-400" />} label="Área *" modoNoche={modoNoche}>
+              <Campo icono={<Layers className="w-5 h-5 text-[#C40000]" />} label="Área *" modoNoche={modoNoche}>
                 <select
                   value={nuevo.area_id || ""}
                   onChange={(e) => setNuevo({ ...nuevo, area_id: Number(e.target.value) })}
@@ -190,7 +190,7 @@ export default function TablaTonners({ modoNoche }: { modoNoche: boolean }) {
               </Campo>
 
               {/* Modelo tonner */}
-              <Campo icono={<ScanLine className="w-5 h-5 text-purple-400" />} label="Modelo tonner" modoNoche={modoNoche}>
+              <Campo icono={<ScanLine className="w-5 h-5 text-[#C40000]" />} label="Modelo tonner" modoNoche={modoNoche}>
                 <input
                   value={nuevo.modelo_tonner}
                   onChange={(e) => setNuevo({ ...nuevo, modelo_tonner: e.target.value })}
