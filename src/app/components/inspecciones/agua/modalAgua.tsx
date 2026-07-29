@@ -25,7 +25,10 @@ const CAMPOS = [
 ];
 
 export default function MovilSanitario({ dataBackend = [], setInspecciones, mostrarModal, setMostrarModal, modoNoche }: Props) {
-  const [responsable,        setResponsable]        = useState(() => localStorage.getItem("responsable") || "");
+  const [responsable,        setResponsable]        = useState(() => {
+    if (typeof window !== "undefined") return localStorage.getItem("responsable") || "";
+    return "";
+  });
   const [areaId,             setAreaId]             = useState("");
   const [areasSeleccionadas, setAreasSeleccionadas] = useState<number[]>([]);
   const [valores,            setValores]            = useState<ValoresType>({});
@@ -39,7 +42,9 @@ export default function MovilSanitario({ dataBackend = [], setInspecciones, most
     a.nombre.toLowerCase().includes(busquedaArea.toLowerCase())
   );
 
-  useEffect(() => { localStorage.setItem("responsable", responsable); }, [responsable]);
+  useEffect(() => {
+    if (typeof window !== "undefined") localStorage.setItem("responsable", responsable);
+  }, [responsable]);
 
   const handleChange = (campo: number, tipo: "c" | "nc", value: string) => {
     const limpio = value.replace(/\D/g, "");

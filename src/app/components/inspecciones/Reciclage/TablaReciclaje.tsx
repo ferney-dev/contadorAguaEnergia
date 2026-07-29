@@ -38,6 +38,7 @@ export default function TablaReciclaje({ modoNoche = false, dataBackend: dataIni
 
   /* ── carga inicial ── */
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const guardado = localStorage.getItem(STORAGE_RESPONSABLE);
     if (guardado) setResponsable(guardado);
 

@@ -39,7 +39,9 @@ export default function MovilEnergia({ dataBackend = [], setInspecciones, mostra
     ? dataBackend.filter((a: any) => String(a?.nombre || "").toLowerCase().includes(busquedaArea.toLowerCase()))
     : [];
 
-  useEffect(() => { localStorage.setItem("responsable", responsable); }, [responsable]);
+  useEffect(() => {
+    if (typeof window !== "undefined") localStorage.setItem("responsable", responsable);
+  }, [responsable]);
 
   const handleChange = (campo: number, tipo: "c" | "nc", value: string) => {
     const limpio = value.replace(/\D/g, "");

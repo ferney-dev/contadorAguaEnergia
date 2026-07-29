@@ -135,21 +135,18 @@ export default function MenuPrincipal() {
   /* ================= MODO NOCHE ================= */
 
   useEffect(() => {
-
+    if (typeof window === "undefined") return;
     if (localStorage.getItem("modoNoche") === "true") {
       setModoNoche(true);
     }
-
   }, []);
 
   const toggleModoNoche = () => {
-
     const nuevo = !modoNoche;
-
     setModoNoche(nuevo);
-
-    localStorage.setItem("modoNoche", nuevo.toString());
-
+    if (typeof window !== "undefined") {
+      localStorage.setItem("modoNoche", nuevo.toString());
+    }
   };
 
   /* ================= COLORES ================= */

@@ -80,12 +80,13 @@ export function useInspeccionesAgua(modoNoche: boolean) {
   };
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (typeof window === "undefined") return;
     const guardado = localStorage.getItem(STORAGE_RESPONSABLE);
     if (guardado) setResponsable(guardado);
   }, []);
 
   useEffect(() => {
-    if (!responsable) return;
 
     const data = { valores, observaciones };
     const key = getStorageKey(responsable);
@@ -95,6 +96,7 @@ export function useInspeccionesAgua(modoNoche: boolean) {
   useEffect(() => {
     if (modoNuevaInspeccion) return;
     if (!responsable) return;
+    if (typeof window === "undefined") return;
 
     const key = getStorageKey(responsable);
     const data = localStorage.getItem(key);
@@ -113,6 +115,7 @@ export function useInspeccionesAgua(modoNoche: boolean) {
     }
   }, [modoNuevaInspeccion, responsable]);
 
+    if (typeof window === "undefined") return;
   useEffect(() => {
     const estado = localStorage.getItem(STORAGE_MODO);
     if (estado === "true") {
@@ -236,8 +239,10 @@ export function useInspeccionesAgua(modoNoche: boolean) {
 
   const finalizarInspeccion = async () => {
     setModoNuevaInspeccion(true);
-    localStorage.setItem(STORAGE_MODO, "true");
-    localStorage.removeItem(getStorageKey(responsable));
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_MODO, "true");
+      localStorage.removeItem(getStorageKey(responsable));
+    }
 
     setValores({});
     setObservaciones({});
