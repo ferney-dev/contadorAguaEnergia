@@ -2,11 +2,14 @@
 
 import { Search, Filter, Plus } from "lucide-react";
 import Swal from "sweetalert2";
-import type { UseInspeccionesAguaReturn } from "../../../hooks/useInspeccionesAgua";
 
 interface Props {
   modoNoche: boolean;
-  estilos: UseInspeccionesAguaReturn["estilos"];
+  estilos: {
+    inputSuave: string;
+    input: string;
+    chip: string;
+  };
   busqueda: string;
   setBusqueda: (value: string) => void;
   anioFiltro: string;
@@ -14,7 +17,7 @@ interface Props {
   mesFiltro: string;
   setMesFiltro: (value: string) => void;
   aniosDisponibles: string[];
-  MESES: UseInspeccionesAguaReturn["MESES"];
+  MESES: { value: string; label: string }[];
   dataBackend: any[];
   inspeccionesFiltradas: [string, any[]][];
   fechaActual: string;
