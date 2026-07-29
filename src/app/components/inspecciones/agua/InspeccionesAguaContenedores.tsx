@@ -3,11 +3,12 @@
 import { CalendarDays, Plus } from "lucide-react";
 import { CheckCircle, XCircle, BarChart3 } from "lucide-react";
 import { exportarSanitariosPDF } from "@/app/utils/exportadorSanitariosPDF";
-import type { UseInspeccionesAguaReturn } from "../../../hooks/useInspeccionesAgua";
 
 interface Props {
   modoNoche: boolean;
-  estilos: UseInspeccionesAguaReturn["estilos"];
+  estilos: {
+    inputSuave: string;
+  };
   fechaActual: string;
   inspecciones: any[];
   setMostrarModal: (value: boolean) => void;
