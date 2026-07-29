@@ -1,8 +1,4 @@
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
-
-if (!BACKEND_URL) {
-  throw new Error("NEXT_PUBLIC_API_URL no está definida");
-}
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://contador-backend-6eyq.onrender.com";
 
 /* =========================
    GET · LISTAR COMPARATIVO ENERGÍA
